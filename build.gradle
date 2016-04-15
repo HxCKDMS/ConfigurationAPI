@@ -8,10 +8,6 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-	compile "org.apache.commons:commons-lang3:3.4"
-}
-
 jar {
     manifest {
         attributes("Main-Class": "Example",
