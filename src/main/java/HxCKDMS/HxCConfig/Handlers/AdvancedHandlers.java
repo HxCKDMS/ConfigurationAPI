@@ -53,12 +53,12 @@ public class AdvancedHandlers {
         Field field = configClass.getField(variable);
         Class<T> listType = (Class<T>) Class.forName(DataWatcher.get("ListType"));
 
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 1) tempList = (List<T>) field.get(null);
+        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 0b1) tempList = (List<T>) field.get(null);
 
         String line;
         while ((line = reader.readLine()) != null && !line.trim().equals("]")) tempList.add((T) getValue(listType, line.trim()));
 
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
             if (field.get(null) == null || ((List) field.get(null)).isEmpty()) field.set(configClass, tempList);
         } else field.set(configClass, tempList);
     }
@@ -121,8 +121,6 @@ public class AdvancedHandlers {
         }
     }
 
-
-
     //MAP STUFF
 
     private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
@@ -148,12 +146,12 @@ public class AdvancedHandlers {
         Field field = configClass.getField(variable);
         Class<K> mapKeyType = (Class<K>) Class.forName(DataWatcher.get("MapKeyType"));
         Class<V> mapValueType = (Class<V>) Class.forName(DataWatcher.get("MapValueType"));
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 1) tempMap = (Map<K, V>) field.get(null);
+        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 0b1) tempMap = (Map<K, V>) field.get(null);
 
         String line;
         while ((line = reader.readLine()) != null && !line.trim().equals("]")) tempMap.put((K)getValue(mapKeyType, line.split("=")[0].trim()), (V)getValue(mapValueType, line.split("=")[1]));
 
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
             if (field.get(null) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, tempMap);
         } else field.set(configClass, tempMap);
     }

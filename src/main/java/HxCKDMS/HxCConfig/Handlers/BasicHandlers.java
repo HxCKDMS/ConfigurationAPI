@@ -32,8 +32,8 @@ public class BasicHandlers {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
-            if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
-                if (field.get(null) == "" || field.get(null) == null) {
+            if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if ("".equals(field.get(null)) || field.get(null) == null) {
                     if (!value.isEmpty()) field.set(configClass, value);
                 }
             } else if (!value.isEmpty()) field.set(configClass, value);
@@ -58,7 +58,7 @@ public class BasicHandlers {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Integer) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Integer.valueOf(value));
                     }
@@ -86,7 +86,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Double) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Double.valueOf(value));
                     }
@@ -114,7 +114,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Character) field.get(null) == ' ') {
                         if (!value.isEmpty()) field.set(configClass, value.charAt(0));
                     }
@@ -142,7 +142,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || !((Boolean) field.get(null))) {
                         if (!value.isEmpty()) field.set(configClass, Boolean.valueOf(value));
                     }
@@ -170,7 +170,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Float) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Float.valueOf(value));
                     }
@@ -198,7 +198,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Short) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Short.valueOf(value));
                     }
@@ -226,7 +226,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Long) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Long.valueOf(value));
                     }
@@ -254,7 +254,7 @@ public class BasicHandlers {
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
                     if (field.get(null) == null || (Byte) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Byte.valueOf(value));
                     }
