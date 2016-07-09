@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
     private Class<?> configClass;
     private HashMap<String, HashMap<String, HashMap<String, String>>> configDataWatcherTest = new HashMap<>();
