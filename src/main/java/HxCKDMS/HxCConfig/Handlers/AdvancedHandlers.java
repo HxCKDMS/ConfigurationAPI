@@ -1,5 +1,6 @@
 package HxCKDMS.HxCConfig.Handlers;
 
+
 import HxCKDMS.HxCConfig.AbstractTypeHandler;
 import HxCKDMS.HxCConfig.Config;
 
@@ -9,7 +10,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
-import static HxCKDMS.HxCConfig.Flags.*;
+import static HxCKDMS.HxCConfig.Flags.overwrite;
+import static HxCKDMS.HxCConfig.Flags.retainOriginalValues;
+
 
 @SuppressWarnings({"unchecked","unused"})
 public class AdvancedHandlers {
@@ -24,11 +27,10 @@ public class AdvancedHandlers {
         else if (type == Short.class) return Short.parseShort(value);
         else if (type == Byte.class) return Byte.parseByte(value);
         else if (type == Boolean.class) return Boolean.parseBoolean(value);
-        else throw new NullPointerException("fuck you!");
+        else throw new NullPointerException("Good job you broke something.");
     }
 
     //LIST STUFF
-    //The above comment is very descriptive @Karel
     private static void mainListWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
         List<Object> tempList = (List<Object>) field.get(null);
 
@@ -50,12 +52,15 @@ public class AdvancedHandlers {
     private static <T> void mainListReader(String variable, HashMap<String, String> DataWatcher, BufferedReader reader, Class<?> configClass, List<T> tempList) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
         Field field = configClass.getField(variable);
         Class<T> listType = (Class<T>) Class.forName(DataWatcher.get("ListType"));
+
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 1) tempList = (List<T>) field.get(null);
 
         String line;
         while ((line = reader.readLine()) != null && !line.trim().equals("]")) tempList.add((T) getValue(listType, line.trim()));
 
-        field.set(configClass, tempList);
+        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+            if (field.get(null) == null || ((List) field.get(null)).isEmpty()) field.set(configClass, tempList);
+        } else field.set(configClass, tempList);
     }
 
     public static class ListHandler extends AbstractTypeHandler {
@@ -148,8 +153,9 @@ public class AdvancedHandlers {
         String line;
         while ((line = reader.readLine()) != null && !line.trim().equals("]")) tempMap.put((K)getValue(mapKeyType, line.split("=")[0].trim()), (V)getValue(mapValueType, line.split("=")[1]));
 
-        System.out.println(field.getName() + "-" + ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[1] + "-" + tempMap);
-        field.set(configClass, tempMap);
+        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 2) {
+            if (field.get(null) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, tempMap);
+        } else field.set(configClass, tempMap);
     }
 
     public static class MapHandler extends AbstractTypeHandler {

@@ -1,6 +1,5 @@
 package HxCKDMS.HxCConfig;
 
-
 import HxCKDMS.HxCConfig.Exceptions.InvalidConfigClassException;
 import HxCKDMS.HxCConfig.Handlers.AdvancedHandlers;
 import HxCKDMS.HxCConfig.Handlers.BasicHandlers;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings("WeakerAccess")
 public class HxCConfig {
     private Class<?> configClass;
     private HashMap<String, HashMap<String, HashMap<String, String>>> configDataWatcherTest = new HashMap<>();
@@ -25,7 +24,7 @@ public class HxCConfig {
     private static HashMap<Class<?>, AbstractTypeHandler> TypeHandlers = new HashMap<>();
     private HashMap<String, String> CategoryComments = new HashMap<>();
     private HashMap<String, HashMap<String, String>> valueComments = new HashMap<>();
-    String app_name;
+    private String app_name;
 
     static {
         //Basic types
@@ -61,7 +60,6 @@ public class HxCConfig {
     public HxCConfig(Class<?> clazz, String configName, File configDirectory, String extension, String app_name) {
         this.configClass = clazz;
         this.configFile = new File(configDirectory, configName + "." + extension);
-        //this.configDataWatcher = new NBTTagCompound();
         this.configDirectory = configDirectory;
         this.dataWatcherDirectory = new File(configDirectory + "/.datawatcher/");
         this.dataWatcherFile = new File(dataWatcherDirectory, configName + ".dat");
