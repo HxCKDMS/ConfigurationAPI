@@ -22,13 +22,13 @@ public class BasicHandlers {
     public static class StringHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", String.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -48,13 +48,13 @@ public class BasicHandlers {
     public static class IntegerHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Integer.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
             try {
@@ -75,13 +75,13 @@ public class BasicHandlers {
     public static class DoubleHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Double.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -103,13 +103,13 @@ public class BasicHandlers {
     public static class CharacterHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Character.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -131,13 +131,13 @@ public class BasicHandlers {
     public static class BooleanHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Boolean.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -159,13 +159,13 @@ public class BasicHandlers {
     public static class FloatHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Float.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -187,13 +187,13 @@ public class BasicHandlers {
     public static class ShortHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Short.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -215,13 +215,13 @@ public class BasicHandlers {
     public static class LongHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Long.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
@@ -243,13 +243,13 @@ public class BasicHandlers {
     public static class ByteHandler extends AbstractTypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
             BasicHandlers.write(field, config);
             DataWatcher.put("Type", Byte.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 

@@ -69,14 +69,14 @@ public class HxCConfig {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void initConfiguration() {
+    public final void initConfiguration() {
         configWritingData.clear();
 
         try {
             configDirectory.mkdirs();
-            if(!configFile.exists()) configFile.createNewFile();
+            if (!configFile.exists()) configFile.createNewFile();
             dataWatcherDirectory.mkdirs();
-            if(!dataWatcherFile.exists()) dataWatcherFile.createNewFile();
+            if (!dataWatcherFile.exists()) dataWatcherFile.createNewFile();
 
             Path path = dataWatcherDirectory.toPath();
             Files.setAttribute(path, "dos:hidden", true);
@@ -90,7 +90,7 @@ public class HxCConfig {
     }
 
     @SuppressWarnings("unchecked")
-    public void deSerialize() {
+    private void deSerialize() {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(dataWatcherFile));
             configDataWatcherTest = (HashMap<String, HashMap<String, HashMap<String, String>>>) inputStream.readObject();
@@ -115,8 +115,8 @@ public class HxCConfig {
                 StringBuilder categoryBuilder = new StringBuilder();
                 for (int i = 0; i < characters.length; i++) {
                     if (i == 0) continue;
-                    if (characters[i] == '{' && characters[i-1] == ' ') break;
-                    categoryBuilder.append(characters[i-1]);
+                    if (characters[i] == '{' && characters[i - 1] == ' ') break;
+                    categoryBuilder.append(characters[i - 1]);
                 }
 
                 if (categoryBuilder.length() != 0) category = categoryBuilder.toString();
@@ -138,7 +138,7 @@ public class HxCConfig {
             try {
                 Class<?> type = Class.forName(configDataWatcherTest.get(category).get(variableName).get("Type"));
 
-                TypeHandlers.get(type).read(variableName, configDataWatcherTest.get(category).get(variableName), line, reader, configClass);
+                TypeHandlers.get(type).read(variableName, configDataWatcherTest.get(category).get(variableName), line, reader, configClass, false);
             } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
@@ -179,11 +179,14 @@ public class HxCConfig {
 
             stringBuilder.append(entry.getKey()).append(" {\n");
 
+            boolean first = true;
             for (Map.Entry<String, Object> entry2 : entry.getValue().entrySet()) {
-                if (valueComments.containsKey(entry.getKey()) && valueComments.get(entry.getKey()).containsKey(entry2.getKey())) stringBuilder.append('\t').append('#').append(' ').append(valueComments.get(entry.getKey()).get(entry2.getKey())).append('\n');
-                stringBuilder.append('\t').append(entry2.getKey()).append('=').append(entry2.getValue()).append("\n\n");
+                if (!first && hasComment(entry.getKey(), entry2.getKey())) stringBuilder.append('\n');
+
+                if (hasComment(entry.getKey(), entry2.getKey())) stringBuilder.append('\t').append('#').append(' ').append(getComment(entry.getKey(), entry2.getKey())).append('\n');
+                stringBuilder.append('\t').append(entry2.getKey()).append('=').append(entry2.getValue()).append('\n');
+                first = false;
             }
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             stringBuilder.append("}\n\n");
         }
 
@@ -203,7 +206,7 @@ public class HxCConfig {
             String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
             HashMap<String, HashMap<String, String>> category = configDataWatcherTest.getOrDefault(categoryName, new HashMap<>());
 
-            TypeHandlers.get(field.getType()).write(field, configWritingData, data);
+            TypeHandlers.get(field.getType()).write(field, configWritingData, data, false);
 
             category.put(field.getName(), data);
             configDataWatcherTest.put(categoryName, category);
@@ -215,5 +218,15 @@ public class HxCConfig {
             e.printStackTrace();
         }
         else LogHelper.severe(String.format("Configuration type: %1$s is unsupported!", field.getType().getCanonicalName()), app_name);
+    }
+
+    //helper methods
+
+    private boolean hasComment(String category, String variable) {
+        return valueComments.containsKey(category) && valueComments.get(category).containsKey(variable);
+    }
+
+    private String getComment(String category, String variable) {
+        return valueComments.get(category).get(variable);
     }
 }

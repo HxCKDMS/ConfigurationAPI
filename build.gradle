@@ -10,7 +10,7 @@ repositories {
 
 jar {
     manifest {
-        attributes("Main-Class": "Example",
-                   "Application-Name": "Example")
+        attributes("Main-Class": "HxCKDMS.HxCConfig.main",
+                   "Application-Name": "HxCConfig")
     }
 }
