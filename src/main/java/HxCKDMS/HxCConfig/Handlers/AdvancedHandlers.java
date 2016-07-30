@@ -1,62 +1,51 @@
 package HxCKDMS.HxCConfig.Handlers;
 
-
-import HxCKDMS.HxCConfig.ITypeHandler;
 import HxCKDMS.HxCConfig.Config;
+import HxCKDMS.HxCConfig.HxCConfig;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import static HxCKDMS.HxCConfig.Flags.overwrite;
 import static HxCKDMS.HxCConfig.Flags.retainOriginalValues;
 
-
-@SuppressWarnings({"unchecked", "unused"})
+@SuppressWarnings("unchecked")
 public class AdvancedHandlers {
-
-    private static Object getValue(Class<?> type, String value) {
-        if (type == String.class) return value;
-        else if (type == Integer.class) return Integer.parseInt(value);
-        else if (type == Double.class) return Double.parseDouble(value);
-        else if (type == Character.class) return value.toCharArray()[0];
-        else if (type == Float.class) return Float.parseFloat(value);
-        else if (type == Long.class) return Long.parseLong(value);
-        else if (type == Short.class) return Short.parseShort(value);
-        else if (type == Byte.class) return Byte.parseByte(value);
-        else if (type == Boolean.class) return Boolean.parseBoolean(value);
-        else throw new NullPointerException("Good job you broke something.");
-    }
 
     //LIST STUFF
     private static void mainListWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+        Class<?> type = (Class<?>) ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0];
+        ICollectionsHandler cHandler = HxCConfig.getCollectionsHandler(type);
+
         List<Object> tempList = (List<Object>) field.get(null);
 
         String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
         StringBuilder listTextBuilder = new StringBuilder();
 
         listTextBuilder.append('[');
-        tempList.forEach(item -> listTextBuilder.append('\n').append("\t\t").append(item));
+        tempList.forEach(item -> listTextBuilder.append('\n').append("\t\t").append(cHandler.writeInCollection(field, item, null)));
         listTextBuilder.append('\n').append('\t').append(']');
 
         LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
         categoryValues.putIfAbsent(field.getName(), listTextBuilder.toString());
         config.put(categoryName, categoryValues);
 
-        ParameterizedType parameterizedType = (ParameterizedType)field.getGenericType();
-        DataWatcher.put("ListType", ((Class<?>)parameterizedType.getActualTypeArguments()[0]).getCanonicalName());
+        DataWatcher.put("ListType", type.getCanonicalName());
     }
 
     private static <T> void mainListReader(String variable, HashMap<String, String> DataWatcher, BufferedReader reader, Class<?> configClass, List<T> tempList) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
         Field field = configClass.getField(variable);
         Class<T> listType = (Class<T>) Class.forName(DataWatcher.get("ListType"));
+        ICollectionsHandler cHandler = HxCConfig.getCollectionsHandler(listType);
 
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 0b1) tempList = (List<T>) field.get(null);
 
         String line;
-        while ((line = reader.readLine()) != null && !line.trim().equals("]")) tempList.add((T) getValue(listType, line.trim()));
+        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try { tempList.add((T) cHandler.readFromCollection(null, line.trim(), reader)); } catch (Exception ignored) {}
 
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
             if (field.get(null) == null || ((List) field.get(null)).isEmpty()) field.set(configClass, tempList);
@@ -126,30 +115,41 @@ public class AdvancedHandlers {
     private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
         Map<Object, Object> tempMap = (Map<Object, Object>) field.get(null);
 
+        Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
+        Class<?> keyType = (Class<?>) types[0];
+        Class<?> valueType = (Class<?>) types[1];
+
+        ICollectionsHandler cKeyHandler = HxCConfig.getCollectionsHandler(keyType);
+        ICollectionsHandler cValueHandler = HxCConfig.getCollectionsHandler(valueType);
+
         String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
         StringBuilder mapTextBuilder = new StringBuilder();
 
         mapTextBuilder.append('[');
-        tempMap.forEach((key, value) -> mapTextBuilder.append('\n').append("\t\t").append(key).append('=').append(value));
+        tempMap.forEach((key, value) -> mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, key, null)).append('=').append(cValueHandler.writeInCollection(field, value, null)));
         mapTextBuilder.append('\n').append('\t').append(']');
 
         LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
         categoryValues.putIfAbsent(field.getName(), mapTextBuilder.toString());
         config.put(categoryName, categoryValues);
 
-        ParameterizedType parameterizedType = (ParameterizedType)field.getGenericType();
-        DataWatcher.put("MapKeyType", ((Class<?>)parameterizedType.getActualTypeArguments()[0]).getCanonicalName());
-        DataWatcher.put("MapValueType", ((Class<?>)parameterizedType.getActualTypeArguments()[1]).getCanonicalName());
+
+        DataWatcher.put("MapKeyType", keyType.getCanonicalName());
+        DataWatcher.put("MapValueType", valueType.getCanonicalName());
     }
 
     private static <K,V> void mainMapReader(String variable, HashMap<String, String> DataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
         Field field = configClass.getField(variable);
         Class<K> mapKeyType = (Class<K>) Class.forName(DataWatcher.get("MapKeyType"));
         Class<V> mapValueType = (Class<V>) Class.forName(DataWatcher.get("MapValueType"));
+
+        ICollectionsHandler cKeyHandler = HxCConfig.getCollectionsHandler(mapKeyType);
+        ICollectionsHandler cValueHandler = HxCConfig.getCollectionsHandler(mapValueType);
+
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & retainOriginalValues) == 0b1) tempMap = (Map<K, V>) field.get(null);
 
         String line;
-        while ((line = reader.readLine()) != null && !line.trim().equals("]")) tempMap.put((K)getValue(mapKeyType, line.split("=")[0].trim()), (V)getValue(mapValueType, line.split("=")[1]));
+        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try { tempMap.put((K) cKeyHandler.readFromCollection(null, line.split("=")[0].trim(), reader), (V) cValueHandler.readFromCollection(null, line.split("=")[1].trim(), reader)); } catch (Exception ignored) {}
 
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
             if (field.get(null) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, tempMap);

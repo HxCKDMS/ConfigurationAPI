@@ -9,6 +9,6 @@ public class main {
         config = new HxCConfig(RandomConfig.class, "testConfig", new File("D:\\Development\\IdeaProjects\\ConfigurationAPI\\test"), "cfg", "test");
         config.initConfiguration();
 
-        System.out.println(RandomConfig.asdft);
+
     }
 }

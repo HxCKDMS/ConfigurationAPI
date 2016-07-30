@@ -3,6 +3,8 @@ package HxCKDMS.HxCConfig;
 import HxCKDMS.HxCConfig.Exceptions.InvalidConfigClassException;
 import HxCKDMS.HxCConfig.Handlers.AdvancedHandlers;
 import HxCKDMS.HxCConfig.Handlers.BasicHandlers;
+import HxCKDMS.HxCConfig.Handlers.ICollectionsHandler;
+import HxCKDMS.HxCConfig.Handlers.ITypeHandler;
 import HxCKDMS.HxCUtils.LogHelper;
 import HxCKDMS.HxCUtils.StringHelper;
 
@@ -15,6 +17,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static HxCKDMS.HxCConfig.Flags.collectionHandler;
+import static HxCKDMS.HxCConfig.Flags.typeHandler;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
     private Class<?> configClass;
@@ -22,35 +27,46 @@ public class HxCConfig {
     private File configFile, dataWatcherFile, configDirectory, dataWatcherDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
     private static HashMap<Class<?>, ITypeHandler> TypeHandlers = new HashMap<>();
+    private static HashMap<Class<?>, ICollectionsHandler> CollectionsHandlers = new HashMap<>();
     private HashMap<String, String> CategoryComments = new HashMap<>();
     private HashMap<String, HashMap<String, String>> valueComments = new HashMap<>();
     private String app_name;
 
     static {
         //Basic types
-        registerTypeHandler(new BasicHandlers.StringHandler());
-        registerTypeHandler(new BasicHandlers.IntegerHandler());
-        registerTypeHandler(new BasicHandlers.DoubleHandler());
-        registerTypeHandler(new BasicHandlers.CharacterHandler());
-        registerTypeHandler(new BasicHandlers.FloatHandler());
-        registerTypeHandler(new BasicHandlers.LongHandler());
-        registerTypeHandler(new BasicHandlers.ShortHandler());
-        registerTypeHandler(new BasicHandlers.ByteHandler());
-        registerTypeHandler(new BasicHandlers.BooleanHandler());
+        registerHandler(new BasicHandlers.StringHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.IntegerHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.DoubleHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.CharacterHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.FloatHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.LongHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.ShortHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.ByteHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.BooleanHandler(), typeHandler | collectionHandler);
 
         //Lists
-        registerTypeHandler(new AdvancedHandlers.ListHandler());
-        registerTypeHandler(new AdvancedHandlers.ArrayListHandler());
-        registerTypeHandler(new AdvancedHandlers.LinkedListHandler());
+        registerHandler(new AdvancedHandlers.ListHandler(), typeHandler);
+        registerHandler(new AdvancedHandlers.ArrayListHandler(), typeHandler);
+        registerHandler(new AdvancedHandlers.LinkedListHandler(), typeHandler);
 
         //Maps
-        registerTypeHandler(new AdvancedHandlers.MapHandler());
-        registerTypeHandler(new AdvancedHandlers.HashMapHandler());
-        registerTypeHandler(new AdvancedHandlers.LinkedHashMapHandler());
+        registerHandler(new AdvancedHandlers.MapHandler(), typeHandler);
+        registerHandler(new AdvancedHandlers.HashMapHandler(), typeHandler);
+        registerHandler(new AdvancedHandlers.LinkedHashMapHandler(), typeHandler);
     }
 
-    public static void registerTypeHandler(ITypeHandler typeHandler) {
-        Arrays.stream(typeHandler.getTypes()).forEach(clazz -> TypeHandlers.putIfAbsent(clazz, typeHandler));
+    @Deprecated
+    public static void registerTypeHandler(ITypeHandler handler) {
+        registerHandler(handler, typeHandler);
+    }
+
+    public static void registerHandler(Object handler, int flag) {
+        if ((flag & Flags.typeHandler) == Flags.typeHandler) Arrays.stream(((ITypeHandler)handler).getTypes()).forEach(clazz -> TypeHandlers.putIfAbsent(clazz, (ITypeHandler) handler));
+        if ((flag & Flags.collectionHandler) == Flags.collectionHandler) Arrays.stream(((ICollectionsHandler)handler).getTypes()).forEach(clazz -> CollectionsHandlers.putIfAbsent(clazz, (ICollectionsHandler) handler));
+    }
+
+    public static ICollectionsHandler getCollectionsHandler(Class<?> type) {
+        return CollectionsHandlers.get(type);
     }
 
     public void setCategoryComment(String category, String comment) {
