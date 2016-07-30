@@ -1,6 +1,6 @@
 package HxCKDMS.HxCConfig.Handlers;
 
-import HxCKDMS.HxCConfig.AbstractTypeHandler;
+import HxCKDMS.HxCConfig.ITypeHandler;
 import HxCKDMS.HxCConfig.Config;
 
 import java.io.BufferedReader;
@@ -19,7 +19,7 @@ public class BasicHandlers {
         config.put(categoryName, categoryValues);
     }
 
-    public static class StringHandler extends AbstractTypeHandler {
+    public static class StringHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -45,7 +45,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class IntegerHandler extends AbstractTypeHandler {
+    public static class IntegerHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -72,7 +72,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class DoubleHandler extends AbstractTypeHandler {
+    public static class DoubleHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -100,7 +100,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class CharacterHandler extends AbstractTypeHandler {
+    public static class CharacterHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -128,7 +128,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class BooleanHandler extends AbstractTypeHandler {
+    public static class BooleanHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -156,7 +156,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class FloatHandler extends AbstractTypeHandler {
+    public static class FloatHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -184,7 +184,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class ShortHandler extends AbstractTypeHandler {
+    public static class ShortHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -212,7 +212,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class LongHandler extends AbstractTypeHandler {
+    public static class LongHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -240,7 +240,7 @@ public class BasicHandlers {
         }
     }
 
-    public static class ByteHandler extends AbstractTypeHandler {
+    public static class ByteHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {

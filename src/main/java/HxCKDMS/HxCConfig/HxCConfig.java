@@ -21,7 +21,7 @@ public class HxCConfig {
     private HashMap<String, HashMap<String, HashMap<String, String>>> configDataWatcherTest = new HashMap<>();
     private File configFile, dataWatcherFile, configDirectory, dataWatcherDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
-    private static HashMap<Class<?>, AbstractTypeHandler> TypeHandlers = new HashMap<>();
+    private static HashMap<Class<?>, ITypeHandler> TypeHandlers = new HashMap<>();
     private HashMap<String, String> CategoryComments = new HashMap<>();
     private HashMap<String, HashMap<String, String>> valueComments = new HashMap<>();
     private String app_name;
@@ -49,7 +49,7 @@ public class HxCConfig {
         registerTypeHandler(new AdvancedHandlers.LinkedHashMapHandler());
     }
 
-    public static void registerTypeHandler(AbstractTypeHandler typeHandler) {
+    public static void registerTypeHandler(ITypeHandler typeHandler) {
         Arrays.stream(typeHandler.getTypes()).forEach(clazz -> TypeHandlers.putIfAbsent(clazz, typeHandler));
     }
 
@@ -84,6 +84,8 @@ public class HxCConfig {
 
             read();
             write();
+
+            serialize();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -192,8 +194,6 @@ public class HxCConfig {
 
         writer.write(stringBuilder.toString().trim());
         writer.close();
-
-        serialize();
     }
 
     private void handleClass(Class clazz) {

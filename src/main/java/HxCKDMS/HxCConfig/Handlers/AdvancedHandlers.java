@@ -1,7 +1,7 @@
 package HxCKDMS.HxCConfig.Handlers;
 
 
-import HxCKDMS.HxCConfig.AbstractTypeHandler;
+import HxCKDMS.HxCConfig.ITypeHandler;
 import HxCKDMS.HxCConfig.Config;
 
 import java.io.BufferedReader;
@@ -63,7 +63,7 @@ public class AdvancedHandlers {
         } else field.set(configClass, tempList);
     }
 
-    public static class ListHandler extends AbstractTypeHandler {
+    public static class ListHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -82,7 +82,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class LinkedListHandler extends AbstractTypeHandler {
+    public static class LinkedListHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -101,7 +101,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class ArrayListHandler extends AbstractTypeHandler {
+    public static class ArrayListHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -156,7 +156,7 @@ public class AdvancedHandlers {
         } else field.set(configClass, tempMap);
     }
 
-    public static class MapHandler extends AbstractTypeHandler {
+    public static class MapHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -175,7 +175,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class HashMapHandler extends AbstractTypeHandler {
+    public static class HashMapHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
@@ -194,7 +194,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class LinkedHashMapHandler extends AbstractTypeHandler {
+    public static class LinkedHashMapHandler implements ITypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
