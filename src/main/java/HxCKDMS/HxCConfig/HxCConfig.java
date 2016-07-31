@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static HxCKDMS.HxCConfig.Flags.collectionHandler;
-import static HxCKDMS.HxCConfig.Flags.typeHandler;
+import static HxCKDMS.HxCConfig.Flags.COLLECTION_HANDLER;
+import static HxCKDMS.HxCConfig.Flags.TYPE_HANDLER;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
@@ -26,51 +26,52 @@ public class HxCConfig {
     private HashMap<String, HashMap<String, HashMap<String, String>>> configDataWatcherTest = new HashMap<>();
     private File configFile, dataWatcherFile, configDirectory, dataWatcherDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
-    private static HashMap<Class<?>, ITypeHandler> TypeHandlers = new HashMap<>();
-    private static HashMap<Class<?>, ICollectionsHandler> CollectionsHandlers = new HashMap<>();
-    private HashMap<String, String> CategoryComments = new HashMap<>();
+    private static HashMap<Class<?>, ITypeHandler> typeHandlers = new HashMap<>();
+    private static HashMap<Class<?>, ICollectionsHandler> collectionsHandlers = new HashMap<>();
+    private HashMap<String, String> categoryComments = new HashMap<>();
     private HashMap<String, HashMap<String, String>> valueComments = new HashMap<>();
     private String app_name;
 
     static {
         //Basic types
-        registerHandler(new BasicHandlers.StringHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.IntegerHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.DoubleHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.CharacterHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.FloatHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.LongHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.ShortHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.ByteHandler(), typeHandler | collectionHandler);
-        registerHandler(new BasicHandlers.BooleanHandler(), typeHandler | collectionHandler);
+        registerHandler(new BasicHandlers.StringHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.IntegerHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.DoubleHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.CharacterHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.FloatHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.LongHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.ShortHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.ByteHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new BasicHandlers.BooleanHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Lists
-        registerHandler(new AdvancedHandlers.ListHandler(), typeHandler);
-        registerHandler(new AdvancedHandlers.ArrayListHandler(), typeHandler);
-        registerHandler(new AdvancedHandlers.LinkedListHandler(), typeHandler);
+        registerHandler(new AdvancedHandlers.ListHandler(), TYPE_HANDLER);
+        registerHandler(new AdvancedHandlers.ArrayListHandler(), TYPE_HANDLER);
+        registerHandler(new AdvancedHandlers.LinkedListHandler(), TYPE_HANDLER);
 
         //Maps
-        registerHandler(new AdvancedHandlers.MapHandler(), typeHandler);
-        registerHandler(new AdvancedHandlers.HashMapHandler(), typeHandler);
-        registerHandler(new AdvancedHandlers.LinkedHashMapHandler(), typeHandler);
+        registerHandler(new AdvancedHandlers.MapHandler(), TYPE_HANDLER);
+        registerHandler(new AdvancedHandlers.HashMapHandler(), TYPE_HANDLER);
+        registerHandler(new AdvancedHandlers.LinkedHashMapHandler(), TYPE_HANDLER);
     }
 
     @Deprecated
     public static void registerTypeHandler(ITypeHandler handler) {
-        registerHandler(handler, typeHandler);
+        registerHandler(handler, TYPE_HANDLER);
     }
 
     public static void registerHandler(Object handler, int flag) {
-        if ((flag & Flags.typeHandler) == Flags.typeHandler) Arrays.stream(((ITypeHandler)handler).getTypes()).forEach(clazz -> TypeHandlers.putIfAbsent(clazz, (ITypeHandler) handler));
-        if ((flag & Flags.collectionHandler) == Flags.collectionHandler) Arrays.stream(((ICollectionsHandler)handler).getTypes()).forEach(clazz -> CollectionsHandlers.putIfAbsent(clazz, (ICollectionsHandler) handler));
+        if ((flag & Flags.TYPE_HANDLER) == Flags.TYPE_HANDLER) Arrays.stream(((ITypeHandler)handler).getTypes()).forEach(clazz -> typeHandlers.putIfAbsent(clazz, (ITypeHandler) handler));
+        if ((flag & Flags.COLLECTION_HANDLER) == Flags.COLLECTION_HANDLER) Arrays.stream(((ICollectionsHandler)handler).getTypes()).forEach(clazz -> collectionsHandlers.putIfAbsent(clazz, (ICollectionsHandler) handler));
     }
 
     public static ICollectionsHandler getCollectionsHandler(Class<?> type) {
-        return CollectionsHandlers.get(type);
+        if (collectionsHandlers.containsKey(type)) return collectionsHandlers.get(type);
+        else throw new NullPointerException(String.format("No collections handler for type: %s exists.", type.getCanonicalName()));
     }
 
     public void setCategoryComment(String category, String comment) {
-        CategoryComments.put(category, comment);
+        categoryComments.put(category, comment);
     }
 
     public HxCConfig(Class<?> clazz, String configName, File configDirectory, String extension, String app_name) {
@@ -96,11 +97,11 @@ public class HxCConfig {
 
             Path path = dataWatcherDirectory.toPath();
             Files.setAttribute(path, "dos:hidden", true);
+
             deSerialize();
-
             read();
+            configDataWatcherTest.clear();
             write();
-
             serialize();
         } catch (Exception e) {
             e.printStackTrace();
@@ -156,8 +157,8 @@ public class HxCConfig {
             try {
                 Class<?> type = Class.forName(configDataWatcherTest.get(category).get(variableName).get("Type"));
 
-                TypeHandlers.get(type).read(variableName, configDataWatcherTest.get(category).get(variableName), line, reader, configClass, false);
-            } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                typeHandlers.get(type).read(variableName, configDataWatcherTest.get(category).get(variableName), line, reader, configClass);
+            } catch (IllegalArgumentException | ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }
@@ -189,8 +190,8 @@ public class HxCConfig {
             stringBuilder.append('#').append(' ').append(entry.getKey()).append('\n');
             stringBuilder.append(StringHelper.repeat('#', 106)).append('\n');
 
-            if (CategoryComments.containsKey(entry.getKey())) {
-                stringBuilder.append('#').append(' ').append(CategoryComments.get(entry.getKey())).append('\n');
+            if (categoryComments.containsKey(entry.getKey())) {
+                stringBuilder.append('#').append(' ').append(categoryComments.get(entry.getKey())).append('\n');
                 stringBuilder.append(StringHelper.repeat('#', 106)).append("\n");
             }
             stringBuilder.append('\n');
@@ -217,12 +218,12 @@ public class HxCConfig {
     }
 
     private void handleFieldWriting(Field field) {
-        if (TypeHandlers.containsKey(field.getType())) try {
+        if (typeHandlers.containsKey(field.getType())) try {
             HashMap<String, String> data = new HashMap<>();
             String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
             HashMap<String, HashMap<String, String>> category = configDataWatcherTest.getOrDefault(categoryName, new HashMap<>());
 
-            TypeHandlers.get(field.getType()).write(field, configWritingData, data, false);
+            typeHandlers.get(field.getType()).write(field, configWritingData, data);
 
             category.put(field.getName(), data);
             configDataWatcherTest.put(categoryName, category);

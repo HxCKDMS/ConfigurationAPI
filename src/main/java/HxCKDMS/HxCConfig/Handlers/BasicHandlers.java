@@ -4,10 +4,9 @@ import HxCKDMS.HxCConfig.Config;
 
 import java.io.BufferedReader;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 
-import static HxCKDMS.HxCConfig.Flags.overwrite;
+import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
 
 public class BasicHandlers {
     private static void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config) throws IllegalAccessException {
@@ -21,17 +20,17 @@ public class BasicHandlers {
     public static class StringHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", String.class.getCanonicalName());
+            dataWatcher.put("Type", String.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
-            if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+            if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                 if ("".equals(field.get(null)) || field.get(null) == null) {
                     if (!value.isEmpty()) field.set(configClass, value);
                 }
@@ -39,8 +38,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -57,17 +56,17 @@ public class BasicHandlers {
     public static class IntegerHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Integer.class.getCanonicalName());
+            dataWatcher.put("Type", Integer.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Integer) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Integer.valueOf(value));
                     }
@@ -76,8 +75,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -94,18 +93,18 @@ public class BasicHandlers {
     public static class DoubleHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Double.class.getCanonicalName());
+            dataWatcher.put("Type", Double.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Double) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Double.valueOf(value));
                     }
@@ -114,8 +113,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -132,18 +131,18 @@ public class BasicHandlers {
     public static class CharacterHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Character.class.getCanonicalName());
+            dataWatcher.put("Type", Character.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Character) field.get(null) == ' ') {
                         if (!value.isEmpty()) field.set(configClass, value.charAt(0));
                     }
@@ -152,8 +151,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -170,18 +169,18 @@ public class BasicHandlers {
     public static class BooleanHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Boolean.class.getCanonicalName());
+            dataWatcher.put("Type", Boolean.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || !((Boolean) field.get(null))) {
                         if (!value.isEmpty()) field.set(configClass, Boolean.valueOf(value));
                     }
@@ -190,8 +189,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -208,18 +207,18 @@ public class BasicHandlers {
     public static class FloatHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Float.class.getCanonicalName());
+            dataWatcher.put("Type", Float.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Float) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Float.valueOf(value));
                     }
@@ -228,8 +227,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -246,18 +245,18 @@ public class BasicHandlers {
     public static class ShortHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Short.class.getCanonicalName());
+            dataWatcher.put("Type", Short.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Short) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Short.valueOf(value));
                     }
@@ -266,8 +265,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -284,18 +283,18 @@ public class BasicHandlers {
     public static class LongHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Long.class.getCanonicalName());
+            dataWatcher.put("Type", Long.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Long) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Long.valueOf(value));
                     }
@@ -304,8 +303,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
@@ -322,18 +321,18 @@ public class BasicHandlers {
     public static class ByteHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher, boolean InsideReader) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
             BasicHandlers.write(field, config);
-            DataWatcher.put("Type", Byte.class.getCanonicalName());
+            dataWatcher.put("Type", Byte.class.getCanonicalName());
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> DataWatcher, String currentLine, BufferedReader reader, Class<?> configClass, boolean InsideReader) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
             Field field = configClass.getField(variable);
 
             try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & overwrite) == 0b10) {
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Byte) field.get(null) == 0) {
                         if (!value.isEmpty()) field.set(configClass, Byte.valueOf(value));
                     }
@@ -342,8 +341,8 @@ public class BasicHandlers {
         }
 
         @Override
-        public String writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
-            return String.valueOf(value);
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+            return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
