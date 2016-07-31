@@ -23,7 +23,7 @@ import static HxCKDMS.HxCConfig.Flags.TYPE_HANDLER;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
     private Class<?> configClass;
-    private HashMap<String, HashMap<String, HashMap<String, String>>> configDataWatcherTest = new HashMap<>();
+    private HashMap<String, HashMap<String, HashMap<String, Object>>> configDataWatcherTest = new HashMap<>();
     private File configFile, dataWatcherFile, configDirectory, dataWatcherDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
     private static HashMap<Class<?>, ITypeHandler> typeHandlers = new HashMap<>();
@@ -112,7 +112,7 @@ public class HxCConfig {
     private void deSerialize() {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(dataWatcherFile));
-            configDataWatcherTest = (HashMap<String, HashMap<String, HashMap<String, String>>>) inputStream.readObject();
+            configDataWatcherTest = (HashMap<String, HashMap<String, HashMap<String, Object>>>) inputStream.readObject();
             inputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,7 +155,7 @@ public class HxCConfig {
             String variableName = nameBuilder.toString();
 
             try {
-                Class<?> type = Class.forName(configDataWatcherTest.get(category).get(variableName).get("Type"));
+                Class<?> type = (Class<?>) configDataWatcherTest.get(category).get(variableName).get("Type");
 
                 typeHandlers.get(type).read(variableName, configDataWatcherTest.get(category).get(variableName), line, reader, configClass);
             } catch (IllegalArgumentException | ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
@@ -219,9 +219,9 @@ public class HxCConfig {
 
     private void handleFieldWriting(Field field) {
         if (typeHandlers.containsKey(field.getType())) try {
-            HashMap<String, String> data = new HashMap<>();
+            HashMap<String, Object> data = new HashMap<>();
             String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
-            HashMap<String, HashMap<String, String>> category = configDataWatcherTest.getOrDefault(categoryName, new HashMap<>());
+            HashMap<String, HashMap<String, Object>> category = configDataWatcherTest.getOrDefault(categoryName, new HashMap<>());
 
             typeHandlers.get(field.getType()).write(field, configWritingData, data);
 

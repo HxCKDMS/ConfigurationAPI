@@ -17,7 +17,7 @@ import static HxCKDMS.HxCConfig.Flags.RETAIN_ORIGINAL_VALUES;
 public class AdvancedHandlers {
 
     //LIST STUFF
-    private static void mainListWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+    private static void mainListWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
         Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
         Class<?> type = (types[0] instanceof ParameterizedType) ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
         ICollectionsHandler cHandler = HxCConfig.getCollectionsHandler(type);
@@ -28,19 +28,21 @@ public class AdvancedHandlers {
         StringBuilder listTextBuilder = new StringBuilder();
 
         listTextBuilder.append('[');
-        tempList.forEach(item -> listTextBuilder.append('\n').append("\t\t").append(cHandler.writeInCollection(field, item, null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()));
+        for (Object value : tempList) {
+            listTextBuilder.append('\n').append("\t\t").append(cHandler.writeInCollection(field, value, null).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
+        }
         listTextBuilder.append('\n').append('\t').append(']');
 
         LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
         categoryValues.putIfAbsent(field.getName(), listTextBuilder.toString());
         config.put(categoryName, categoryValues);
 
-        DataWatcher.put("ListType", type.getCanonicalName());
+        dataWatcher.put("ListType", type.getCanonicalName());
     }
 
-    private static <T> void mainListReader(String variable, HashMap<String, String> DataWatcher, BufferedReader reader, Class<?> configClass, List<T> tempList) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+    private static <T> void mainListReader(String variable, HashMap<String, Object> DataWatcher, BufferedReader reader, Class<?> configClass, List<T> tempList) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
         Field field = configClass.getField(variable);
-        Class<T> listType = (Class<T>) Class.forName(DataWatcher.get("ListType"));
+        Class<T> listType = (Class<T>) Class.forName(DataWatcher.get("ListType").toString());
         ICollectionsHandler cHandler = HxCConfig.getCollectionsHandler(listType);
 
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & RETAIN_ORIGINAL_VALUES) == RETAIN_ORIGINAL_VALUES) tempList = (List<T>) field.get(null);
@@ -56,23 +58,23 @@ public class AdvancedHandlers {
     public static class ListHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
             mainListWriter(field, config, dataWatcher);
-            dataWatcher.put("Type", List.class.getCanonicalName());
+            dataWatcher.put("Type", List.class);
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+        public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainListReader(variable, dataWatcher, reader, configClass, new LinkedList<>());
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
             return null;
         }
 
         @Override
-        public List readFromCollection(HashMap<String, String> subDataWatcher, String currentLine, BufferedReader reader) {
+        public List readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader) {
             return null;
         }
 
@@ -85,23 +87,23 @@ public class AdvancedHandlers {
     public static class LinkedListHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
             mainListWriter(field, config, dataWatcher);
-            dataWatcher.put("Type", LinkedList.class.getCanonicalName());
+            dataWatcher.put("Type", LinkedList.class);
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+        public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainListReader(variable, dataWatcher, reader, configClass, new LinkedList<>());
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
             return null;
         }
 
         @Override
-        public LinkedList readFromCollection(HashMap<String, String> subDataWatcher, String currentLine, BufferedReader reader) {
+        public LinkedList readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader) {
             return null;
         }
 
@@ -114,24 +116,24 @@ public class AdvancedHandlers {
     public static class ArrayListHandler implements ITypeHandler, ICollectionsHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
             mainListWriter(field, config, dataWatcher);
-            dataWatcher.put("Type", ArrayList.class.getCanonicalName());
+            dataWatcher.put("Type", ArrayList.class);
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+        public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainListReader(variable, dataWatcher, reader, configClass, new ArrayList<>());
         }
 
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, String> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
             return null;
         }
 
         @Override
-        public ArrayList readFromCollection(HashMap<String, String> subDataWatcher, String currentLine, BufferedReader reader) {
+        public ArrayList readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader) {
             return null;
         }
 
@@ -143,7 +145,7 @@ public class AdvancedHandlers {
 
     //MAP STUFF
 
-    private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> DataWatcher) throws IllegalAccessException {
+    private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> DataWatcher) throws IllegalAccessException {
         Map<Object, Object> tempMap = (Map<Object, Object>) field.get(null);
 
         Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
@@ -157,7 +159,9 @@ public class AdvancedHandlers {
         StringBuilder mapTextBuilder = new StringBuilder();
 
         mapTextBuilder.append('[');
-        tempMap.forEach((key, value) -> mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, key, null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, value, null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()));
+        for (Map.Entry<Object, Object> entry: tempMap.entrySet()) {
+            mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, entry.getKey(), null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, entry.getValue(), null).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
+        }
         mapTextBuilder.append('\n').append('\t').append(']');
 
         LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
@@ -165,14 +169,14 @@ public class AdvancedHandlers {
         config.put(categoryName, categoryValues);
 
 
-        DataWatcher.put("MapKeyType", keyType.getCanonicalName());
-        DataWatcher.put("MapValueType", valueType.getCanonicalName());
+        DataWatcher.put("MapKeyType", keyType);
+        DataWatcher.put("MapValueType", valueType);
     }
 
-    private static <K,V> void mainMapReader(String variable, HashMap<String, String> DataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
+    private static <K,V> void mainMapReader(String variable, HashMap<String, Object> DataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
         Field field = configClass.getField(variable);
-        Class<K> mapKeyType = (Class<K>) Class.forName(DataWatcher.get("MapKeyType"));
-        Class<V> mapValueType = (Class<V>) Class.forName(DataWatcher.get("MapValueType"));
+        Class<K> mapKeyType = (Class<K>) DataWatcher.get("MapKeyType");
+        Class<V> mapValueType = (Class<V>) DataWatcher.get("MapValueType");
 
         ICollectionsHandler cKeyHandler = HxCConfig.getCollectionsHandler(mapKeyType);
         ICollectionsHandler cValueHandler = HxCConfig.getCollectionsHandler(mapValueType);
@@ -190,13 +194,13 @@ public class AdvancedHandlers {
     public static class MapHandler implements ITypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
             mainMapWriter(field, config, dataWatcher);
-            dataWatcher.put("Type", Map.class.getCanonicalName());
+            dataWatcher.put("Type", Map.class);
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+        public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainMapReader(variable, dataWatcher, reader, configClass, new HashMap<>());
         }
 
@@ -209,13 +213,13 @@ public class AdvancedHandlers {
     public static class HashMapHandler implements ITypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
             mainMapWriter(field, config, dataWatcher);
-            dataWatcher.put("Type", HashMap.class.getCanonicalName());
+            dataWatcher.put("Type", HashMap.class);
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+        public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainMapReader(variable, dataWatcher, reader, configClass, new HashMap<>());
         }
 
@@ -228,13 +232,13 @@ public class AdvancedHandlers {
     public static class LinkedHashMapHandler implements ITypeHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, String> dataWatcher) throws IllegalAccessException {
+        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
             mainMapWriter(field, config, dataWatcher);
-            dataWatcher.put("Type", LinkedHashMap.class.getCanonicalName());
+            dataWatcher.put("Type", LinkedHashMap.class);
         }
 
         @Override
-        public void read(String variable, HashMap<String, String> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
+        public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainMapReader(variable, dataWatcher, reader, configClass, new LinkedHashMap<>());
         }
 

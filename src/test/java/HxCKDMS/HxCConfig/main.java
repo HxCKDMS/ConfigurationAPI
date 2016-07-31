@@ -6,7 +6,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class main {
     private static HxCConfig config;
@@ -21,8 +20,6 @@ public class main {
 
         time = System.nanoTime() - time;
         System.out.println(time * 1E-9);
-
-        System.out.println(Stream.of("test"/*, "asdf", "19254", "I'm blue, dabudidabuda"*/).reduce((a, b) -> a + '\n' + b).get());
 
         time = System.nanoTime();
 
