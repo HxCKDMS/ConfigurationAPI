@@ -294,6 +294,7 @@ public class AdvancedHandlers {
 
                 reader.reset();
                 line = reader.readLine();
+                if (line == null) break;
             }
 
             if (line.contains("=")) {

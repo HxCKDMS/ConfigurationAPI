@@ -15,7 +15,7 @@ public class RandomConfig {
 
         List<String> test4 = Arrays.asList("fasdf", "fdsav", "bgf");
         List<String> test5 = Arrays.asList("bgfdtr", "asdf", "brt");
-        List<String> test6 = Arrays.asList("Keldon", "Karel", "Anthony");
+        List<String> test6 = Arrays.asList("Keldon", "Sietse", "Anthony");
 
         test.put(Arrays.asList(test1, test2, test3), Arrays.asList(test4, test5, test6));
         test.put(Arrays.asList(test2, test3, test1), Arrays.asList(test5, test6, test4));
