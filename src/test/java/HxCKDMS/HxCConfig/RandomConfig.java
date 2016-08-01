@@ -1,42 +1,24 @@
 package HxCKDMS.HxCConfig;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Config
 public class RandomConfig {
-    //public static List<List<List<List<String>>>> test = new ArrayList<>();
-
-    public static List<List<List<String>>> test5 = new ArrayList<>();
-
-    //public static List<List<String>> test1 = new ArrayList<>();
-
-    //public static List<String> test4 = new ArrayList<>();
+    public static LinkedHashMap<List<List<String>>, List<List<String>>> test = new LinkedHashMap<>();
 
     static {
-        List<List<String>> test1 = new ArrayList<>();
-        List<List<String>> test2 = new ArrayList<>();
-        List<List<String>> test3 = new ArrayList<>();
-        //List<List<List<String>>> test5 = new ArrayList<>();
+        List<String> test1 = Arrays.asList("test", "gklvasd", "nvirr");
+        List<String> test2 = Arrays.asList("bgf", "rewvfs", "bsd");
+        List<String> test3 = Arrays.asList("rvweds", "breswe", "asdf");
 
-        test1.add(Arrays.asList("test", "karle", "mnadrkea"));
-        test1.add(Arrays.asList("no", "yes", "maybe"));
-        test1.add(Arrays.asList("true", "false", "neither"));
-        test5.add(test1);
+        List<String> test4 = Arrays.asList("fasdf", "fdsav", "bgf");
+        List<String> test5 = Arrays.asList("bgfdtr", "asdf", "brt");
+        List<String> test6 = Arrays.asList("Keldon", "Karel", "Anthony");
 
-        test2.add(Arrays.asList("hfd", "54t", "htr"));
-        test2.add(Arrays.asList("nbc", "gasd", "ewrg"));
-        test2.add(Arrays.asList("gfsd", "rwe", "ytr"));
-        test5.add(test2);
-
-        test3.add(Arrays.asList("bgd", "dsfag", "sfg"));
-        test3.add(Arrays.asList("adsf", "xcas", "bcv"));
-        test3.add(Arrays.asList("try", "bgfd", "tht"));
-        test5.add(test3);
-
-        //test.add(test5);
-
-        //test4 = Arrays.asList("asdf", "fdsa", "qwerty");
+        test.put(Arrays.asList(test1, test2, test3), Arrays.asList(test4, test5, test6));
+        test.put(Arrays.asList(test2, test3, test1), Arrays.asList(test5, test6, test4));
+        test.put(Arrays.asList(test3, test1, test2), Arrays.asList(test6, test4, test5));
     }
 }

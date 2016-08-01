@@ -99,7 +99,7 @@ public class AdvancedHandlers {
         HashMap<String, Object> subDataWatcherInner = (HashMap<String, Object>) subDataWatcher.getOrDefault("SubDataWatcher", null);
 
         String line;
-        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try {
+        while ((line = reader.readLine()) != null && !line.trim().startsWith("]")) try {
             if (cHandler instanceof ICollectionsTypeHandler && ((ICollectionsTypeHandler) cHandler).beginChar() == line.trim().charAt(0)) {
                 tempList.add((T) cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader));
                 continue;
@@ -107,11 +107,12 @@ public class AdvancedHandlers {
 
             Object test = cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader);
             tempList.add((T) test);
+
+            reader.mark(1000000);
+
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
-
-
         return tempList;
     }
 
@@ -235,7 +236,7 @@ public class AdvancedHandlers {
 
     //MAP STUFF
 
-    private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> DataWatcher) throws IllegalAccessException {
+    private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
         Map<Object, Object> tempMap = (Map<Object, Object>) field.get(null);
 
         Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
@@ -252,9 +253,14 @@ public class AdvancedHandlers {
         String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
         StringBuilder mapTextBuilder = new StringBuilder();
 
+        HashMap<String, Object> subKeyDataWatcher = new HashMap<>();
+        HashMap<String, Object> subValueDataWatcher = new HashMap<>();
+
         mapTextBuilder.append('[');
+        boolean firstIteration = true;
         for (Map.Entry<Object, Object> entry: tempMap.entrySet()) {
-            mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, entry.getKey(), null, isKeyParameterized ? (ParameterizedType) types[0] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, entry.getValue(), null,  isKeyParameterized ? (ParameterizedType) types[1] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
+            mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, entry.getKey(), firstIteration ? subKeyDataWatcher : null, isKeyParameterized ? (ParameterizedType) types[0] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, entry.getValue(), firstIteration ? subValueDataWatcher : null,  isValueParameterized ? (ParameterizedType) types[1] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
+            firstIteration = false;
         }
         mapTextBuilder.append('\n').append('\t').append(']');
 
@@ -262,15 +268,18 @@ public class AdvancedHandlers {
         categoryValues.putIfAbsent(field.getName(), mapTextBuilder.toString());
         config.put(categoryName, categoryValues);
 
-
-        DataWatcher.put("MapKeyType", keyType);
-        DataWatcher.put("MapValueType", valueType);
+        dataWatcher.put("SubKeyDataWatcher", subKeyDataWatcher);
+        dataWatcher.put("SubValueDataWatcher", subValueDataWatcher);
+        dataWatcher.put("MapKeyType", keyType);
+        dataWatcher.put("MapValueType", valueType);
     }
 
-    private static <K,V> void mainMapReader(String variable, HashMap<String, Object> DataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
+    private static <K,V> void mainMapReader(String variable, HashMap<String, Object> dataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
         Field field = configClass.getField(variable);
-        Class<K> mapKeyType = (Class<K>) DataWatcher.get("MapKeyType");
-        Class<V> mapValueType = (Class<V>) DataWatcher.get("MapValueType");
+        Class<K> mapKeyType = (Class<K>) dataWatcher.get("MapKeyType");
+        Class<V> mapValueType = (Class<V>) dataWatcher.get("MapValueType");
+        HashMap<String, Object> subKeyDataWatcher = (HashMap<String, Object>) dataWatcher.getOrDefault("SubKeyDataWatcher", null);
+        HashMap<String, Object> subValueDataWatcher = (HashMap<String, Object>) dataWatcher.getOrDefault("SubValueDataWatcher", null);
 
         ICollectionsHandler cKeyHandler = HxCConfig.getCollectionsHandler(mapKeyType);
         ICollectionsHandler cValueHandler = HxCConfig.getCollectionsHandler(mapValueType);
@@ -278,7 +287,22 @@ public class AdvancedHandlers {
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & RETAIN_ORIGINAL_VALUES) == RETAIN_ORIGINAL_VALUES) tempMap = (Map<K, V>) field.get(null);
 
         String line;
-        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try { tempMap.put((K) cKeyHandler.readFromCollection(null, line.split("=")[0].trim(), reader), (V) cValueHandler.readFromCollection(null, line.split("=")[1].trim(), reader)); } catch (Exception ignored) {}
+        K key = null;
+        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try {
+            if (key == null) {
+                key = (K) cKeyHandler.readFromCollection(subKeyDataWatcher, line.split("=")[0].trim(), reader);
+
+                reader.reset();
+                line = reader.readLine();
+            }
+
+            if (line.contains("=")) {
+                tempMap.put(key, (V) cValueHandler.readFromCollection(subValueDataWatcher, line.split("=")[1].trim(), reader));
+                key = null;
+            }
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
 
         if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
             if (field.get(null) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, tempMap);
