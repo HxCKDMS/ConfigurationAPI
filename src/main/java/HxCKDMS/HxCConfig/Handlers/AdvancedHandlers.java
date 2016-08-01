@@ -99,26 +99,23 @@ public class AdvancedHandlers {
         HashMap<String, Object> subDataWatcherInner = (HashMap<String, Object>) subDataWatcher.getOrDefault("SubDataWatcher", null);
 
         String line;
-        System.out.println("temp");
         while ((line = reader.readLine()) != null && !line.trim().equals("]")) try {
-            if (line.trim().equals("[")) continue;
+            if (cHandler instanceof ICollectionsTypeHandler && ((ICollectionsTypeHandler) cHandler).beginChar() == line.trim().charAt(0)) {
+                tempList.add((T) cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader));
+                continue;
+            }
 
-
-            System.out.println(cHandler + ": " + line.trim());
             Object test = cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader);
-            System.out.println(cHandler + ": " + test);
             tempList.add((T) test);
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
 
 
-        System.out.println(tempList);
         return tempList;
     }
 
-
-    public static class ListHandler implements ITypeHandler, ICollectionsHandler {
+    public static class ListHandler implements ICollectionsTypeHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -145,9 +142,19 @@ public class AdvancedHandlers {
         public Class<?>[] getTypes() {
             return new Class<?>[] {List.class};
         }
+
+        @Override
+        public char beginChar() {
+            return '[';
+        }
+
+        @Override
+        public char endChar() {
+            return ']';
+        }
     }
 
-    public static class LinkedListHandler implements ITypeHandler, ICollectionsHandler {
+    public static class LinkedListHandler implements ICollectionsTypeHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -174,9 +181,19 @@ public class AdvancedHandlers {
         public Class<?>[] getTypes() {
             return new Class<?>[]{LinkedList.class};
         }
+
+        @Override
+        public char beginChar() {
+            return '[';
+        }
+
+        @Override
+        public char endChar() {
+            return ']';
+        }
     }
 
-    public static class ArrayListHandler implements ITypeHandler, ICollectionsHandler {
+    public static class ArrayListHandler implements ICollectionsTypeHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -203,6 +220,16 @@ public class AdvancedHandlers {
         @Override
         public Class<?>[] getTypes() {
             return new Class<?>[]{ArrayList.class};
+        }
+
+        @Override
+        public char beginChar() {
+            return '[';
+        }
+
+        @Override
+        public char endChar() {
+            return ']';
         }
     }
 
@@ -258,7 +285,7 @@ public class AdvancedHandlers {
         } else field.set(configClass, tempMap);
     }
 
-    public static class MapHandler implements ITypeHandler {
+    public static class MapHandler implements ICollectionsTypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -275,9 +302,19 @@ public class AdvancedHandlers {
         public Class<?>[] getTypes() {
             return new Class<?>[]{Map.class};
         }
+
+        @Override
+        public char beginChar() {
+            return '[';
+        }
+
+        @Override
+        public char endChar() {
+            return ']';
+        }
     }
 
-    public static class HashMapHandler implements ITypeHandler {
+    public static class HashMapHandler implements ICollectionsTypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -294,9 +331,19 @@ public class AdvancedHandlers {
         public Class<?>[] getTypes() {
             return new Class<?>[]{HashMap.class};
         }
+
+        @Override
+        public char beginChar() {
+            return '[';
+        }
+
+        @Override
+        public char endChar() {
+            return ']';
+        }
     }
 
-    public static class LinkedHashMapHandler implements ITypeHandler {
+    public static class LinkedHashMapHandler implements ICollectionsTypeHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -312,6 +359,16 @@ public class AdvancedHandlers {
         @Override
         public Class<?>[] getTypes() {
             return new Class<?>[]{LinkedHashMap.class};
+        }
+
+        @Override
+        public char beginChar() {
+            return '[';
+        }
+
+        @Override
+        public char endChar() {
+            return ']';
         }
     }
 }
