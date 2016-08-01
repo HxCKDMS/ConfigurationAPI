@@ -292,9 +292,11 @@ public class AdvancedHandlers {
             if (key == null) {
                 key = (K) cKeyHandler.readFromCollection(subKeyDataWatcher, line.split("=")[0].trim(), reader);
 
-                reader.reset();
-                line = reader.readLine();
-                if (line == null) break;
+                try {
+                    reader.reset();
+                    line = reader.readLine();
+                    if (line == null) break;
+                } catch (IOException ignored) {}
             }
 
             if (line.contains("=")) {
