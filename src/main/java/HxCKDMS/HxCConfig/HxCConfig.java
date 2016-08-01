@@ -45,9 +45,9 @@ public class HxCConfig {
         registerHandler(new BasicHandlers.BooleanHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Lists
-        registerHandler(new AdvancedHandlers.ListHandler(), TYPE_HANDLER);
-        registerHandler(new AdvancedHandlers.ArrayListHandler(), TYPE_HANDLER);
-        registerHandler(new AdvancedHandlers.LinkedListHandler(), TYPE_HANDLER);
+        registerHandler(new AdvancedHandlers.ListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new AdvancedHandlers.ArrayListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new AdvancedHandlers.LinkedListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Maps
         registerHandler(new AdvancedHandlers.MapHandler(), TYPE_HANDLER);

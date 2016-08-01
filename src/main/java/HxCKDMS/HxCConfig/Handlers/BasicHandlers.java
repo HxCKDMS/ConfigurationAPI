@@ -4,6 +4,7 @@ import HxCKDMS.HxCConfig.Config;
 
 import java.io.BufferedReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
@@ -38,7 +39,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -75,7 +76,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -113,7 +114,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -151,7 +152,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -189,7 +190,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -227,7 +228,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -265,7 +266,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -303,7 +304,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
@@ -341,7 +342,7 @@ public class BasicHandlers {
         }
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher) {
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
             return Collections.singletonList(String.valueOf(value));
         }
 
