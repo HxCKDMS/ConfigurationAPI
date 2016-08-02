@@ -50,9 +50,9 @@ public class HxCConfig {
         registerHandler(new AdvancedHandlers.LinkedListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Maps
-        registerHandler(new AdvancedHandlers.MapHandler(), TYPE_HANDLER);
-        registerHandler(new AdvancedHandlers.HashMapHandler(), TYPE_HANDLER);
-        registerHandler(new AdvancedHandlers.LinkedHashMapHandler(), TYPE_HANDLER);
+        registerHandler(new AdvancedHandlers.MapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new AdvancedHandlers.HashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new AdvancedHandlers.LinkedHashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
     }
 
     @Deprecated

@@ -18,6 +18,7 @@ import static HxCKDMS.HxCConfig.Flags.RETAIN_ORIGINAL_VALUES;
 public class AdvancedHandlers {
 
     //LIST STUFF
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     private static void mainListWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
         Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
 
@@ -92,6 +93,7 @@ public class AdvancedHandlers {
         } else field.set(configClass, tempList);
     }
 
+    @SuppressWarnings("unused")
     private static <T> List mainListCollectionReader(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, List<T> tempList) throws IOException {
         Class<T> listType = (Class<T>) subDataWatcher.get("Type");
         ICollectionsHandler cHandler = HxCConfig.getCollectionsHandler(listType);
@@ -105,8 +107,7 @@ public class AdvancedHandlers {
                 continue;
             }
 
-            Object test = cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader);
-            tempList.add((T) test);
+            tempList.add((T) cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader));
 
             reader.mark(1000000);
 
@@ -236,6 +237,7 @@ public class AdvancedHandlers {
 
     //MAP STUFF
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
         Map<Object, Object> tempMap = (Map<Object, Object>) field.get(null);
 
@@ -272,6 +274,49 @@ public class AdvancedHandlers {
         dataWatcher.put("SubValueDataWatcher", subValueDataWatcher);
         dataWatcher.put("MapKeyType", keyType);
         dataWatcher.put("MapValueType", valueType);
+    }
+
+    private static List<String> mainMapCollectionWriter(Field field, Map<Object, Object> value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
+        Type[] types = parameterizedType.getActualTypeArguments();
+        boolean isKeyParameterized = (types[0] instanceof ParameterizedType);
+        boolean isValueParameterized = (types[1] instanceof ParameterizedType);
+        Class<?> keyType = isKeyParameterized ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
+        Class<?> valueType = isValueParameterized ? (Class<?>) ((ParameterizedType) types[1]).getRawType() : (Class<?>) types[1];
+
+        ICollectionsHandler cKeyHandler = HxCConfig.getCollectionsHandler(keyType);
+        ICollectionsHandler cValueHandler = HxCConfig.getCollectionsHandler(valueType);
+
+        LinkedList<String> lines = new LinkedList<>();
+
+        HashMap<String, Object> subKeyDataWatcher = new HashMap<>();
+        HashMap<String, Object> subValueDataWatcher = new HashMap<>();
+
+        lines.add("[");
+        boolean firstIteration = true;
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+            LinkedList<String> itKey = new LinkedList<>(cKeyHandler.writeInCollection(field, entry.getKey(), firstIteration ? subKeyDataWatcher : null, isKeyParameterized ? (ParameterizedType) types[0] : null).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            LinkedList<String> itValue = new LinkedList<>(cValueHandler.writeInCollection(field, entry.getValue(), firstIteration ? subValueDataWatcher : null, isValueParameterized ? (ParameterizedType) types[1] : null).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            String keyLast = itKey.getLast();
+            String valueFirst = itValue.getFirst();
+            itKey.removeLast();
+            itValue.removeFirst();
+
+            lines.addAll(itKey);
+            lines.add(keyLast + "=" + valueFirst.trim());
+            lines.addAll(itValue);
+
+            firstIteration = false;
+        }
+        lines.add("]");
+
+        if (subDataWatcher != null) {
+            subDataWatcher.put("SubKeyDataWatcher", subKeyDataWatcher);
+            subDataWatcher.put("SubValueDataWatcher", subValueDataWatcher);
+            subDataWatcher.put("MapKeyType", keyType);
+            subDataWatcher.put("MapValueType", valueType);
+        }
+
+        return lines;
     }
 
     private static <K,V> void mainMapReader(String variable, HashMap<String, Object> dataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
@@ -312,7 +357,35 @@ public class AdvancedHandlers {
         } else field.set(configClass, tempMap);
     }
 
-    public static class MapHandler implements ICollectionsTypeHandler {
+    @SuppressWarnings("unused")
+    private static <K, V> Map mainMapCollectionReader(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<K, V> tempMap) throws IOException {
+        Class<K> mapKeyType = (Class<K>) subDataWatcher.get("MapKeyType");
+        Class<V> mapValueType = (Class<V>) subDataWatcher.get("MapValueType");
+        ICollectionsHandler cKeyHandler = HxCConfig.getCollectionsHandler(mapKeyType);
+        ICollectionsHandler cValueHandler = HxCConfig.getCollectionsHandler(mapValueType);
+
+        HashMap<String, Object> subKeyDataWatcherInner = (HashMap<String, Object>) subDataWatcher.getOrDefault("SubKeyDataWatcher", null);
+        HashMap<String, Object> subValueDataWatcherInner = (HashMap<String, Object>) subDataWatcher.getOrDefault("SubValueDataWatcher", null);
+
+        String line;
+        K key = null;
+        while ((line = reader.readLine()) != null && !line.trim().startsWith("]")) try {
+            if (key == null) key = (K) cKeyHandler.readFromCollection(subKeyDataWatcherInner, line.split("=")[0].trim(), reader);
+
+            if (line.contains("=")) {
+                tempMap.put(key, (V) cValueHandler.readFromCollection(subValueDataWatcherInner, line.split("=")[1].trim(), reader));
+                key = null;
+            }
+
+            reader.mark(1000000);
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
+
+        return tempMap;
+    }
+
+    public static class MapHandler implements ICollectionsTypeHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -323,6 +396,16 @@ public class AdvancedHandlers {
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainMapReader(variable, dataWatcher, reader, configClass, new HashMap<>());
+        }
+
+        @Override
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
+            return mainMapCollectionWriter(field, (Map) value, subDataWatcher, parameterizedType);
+        }
+
+        @Override
+        public Object readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader) throws IOException {
+            return mainMapCollectionReader(subDataWatcher, currentLine, reader, new HashMap<>());
         }
 
         @Override
@@ -341,7 +424,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class HashMapHandler implements ICollectionsTypeHandler {
+    public static class HashMapHandler implements ICollectionsTypeHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -352,6 +435,16 @@ public class AdvancedHandlers {
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainMapReader(variable, dataWatcher, reader, configClass, new HashMap<>());
+        }
+
+        @Override
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
+            return mainMapCollectionWriter(field, (Map) value, subDataWatcher, parameterizedType);
+        }
+
+        @Override
+        public Object readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader) throws IOException {
+            return mainMapCollectionReader(subDataWatcher, currentLine, reader, new HashMap<>());
         }
 
         @Override
@@ -370,7 +463,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class LinkedHashMapHandler implements ICollectionsTypeHandler {
+    public static class LinkedHashMapHandler implements ICollectionsTypeHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -381,6 +474,16 @@ public class AdvancedHandlers {
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
             mainMapReader(variable, dataWatcher, reader, configClass, new LinkedHashMap<>());
+        }
+
+        @Override
+        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType) {
+            return mainMapCollectionWriter(field, (Map) value, subDataWatcher, parameterizedType);
+        }
+
+        @Override
+        public Object readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader) throws IOException {
+            return mainMapCollectionReader(subDataWatcher, currentLine, reader, new LinkedHashMap<>());
         }
 
         @Override

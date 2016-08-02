@@ -1,9 +1,9 @@
 package HxCKDMS.HxCUtils;
 
 public class StringHelper {
-    public static <T> T repeat(T input, int times) {
+    public static <T> String repeat(T input, int times) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < times; i++) builder.append(input);
-        return (T) builder.toString();
+        return builder.toString();
     }
 }
