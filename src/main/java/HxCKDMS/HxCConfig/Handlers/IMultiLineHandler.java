@@ -1,6 +1,6 @@
 package HxCKDMS.HxCConfig.Handlers;
 
-public interface ICollectionsTypeHandler extends ITypeHandler {
+public interface IMultiLineHandler {
     char beginChar();
     char endChar();
 }

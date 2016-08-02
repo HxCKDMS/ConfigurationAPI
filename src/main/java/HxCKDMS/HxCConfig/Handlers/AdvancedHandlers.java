@@ -102,7 +102,7 @@ public class AdvancedHandlers {
 
         String line;
         while ((line = reader.readLine()) != null && !line.trim().startsWith("]")) try {
-            if (cHandler instanceof ICollectionsTypeHandler && ((ICollectionsTypeHandler) cHandler).beginChar() == line.trim().charAt(0)) {
+            if (cHandler instanceof IMultiLineHandler && ((IMultiLineHandler) cHandler).beginChar() == line.trim().charAt(0)) {
                 tempList.add((T) cHandler.readFromCollection(subDataWatcherInner, line.trim(), reader));
                 continue;
             }
@@ -117,7 +117,7 @@ public class AdvancedHandlers {
         return tempList;
     }
 
-    public static class ListHandler implements ICollectionsTypeHandler, ICollectionsHandler {
+    public static class ListHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -156,7 +156,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class LinkedListHandler implements ICollectionsTypeHandler, ICollectionsHandler {
+    public static class LinkedListHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -195,7 +195,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class ArrayListHandler implements ICollectionsTypeHandler, ICollectionsHandler {
+    public static class ArrayListHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -385,7 +385,7 @@ public class AdvancedHandlers {
         return tempMap;
     }
 
-    public static class MapHandler implements ICollectionsTypeHandler, ICollectionsHandler {
+    public static class MapHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -424,7 +424,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class HashMapHandler implements ICollectionsTypeHandler, ICollectionsHandler {
+    public static class HashMapHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
@@ -463,7 +463,7 @@ public class AdvancedHandlers {
         }
     }
 
-    public static class LinkedHashMapHandler implements ICollectionsTypeHandler, ICollectionsHandler {
+    public static class LinkedHashMapHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
