@@ -8,8 +8,6 @@ import HxCKDMS.HxCUtils.StringHelper;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,8 +19,7 @@ import static HxCKDMS.HxCConfig.Flags.TYPE_HANDLER;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
     private Class<?> configClass;
-    private HashMap<String, HashMap<String, HashMap<String, Object>>> configDataWatcherTest = new HashMap<>();
-    private File configFile, dataWatcherFile, configDirectory, dataWatcherDirectory;
+    private File configFile, configDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
     private static HashMap<Class<?>, ITypeHandler> typeHandlers = new HashMap<>();
     private static HashMap<Class<?>, ICollectionsHandler> collectionsHandlers = new HashMap<>();
@@ -53,7 +50,7 @@ public class HxCConfig {
         registerHandler(new CollectionsHandlers.LinkedHashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Special
-        registerHandler(new SpecialHandlers.specialClassHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new SpecialHandlers.SpecialClassHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
     }
 
     @Deprecated
@@ -79,8 +76,6 @@ public class HxCConfig {
         this.configClass = clazz;
         this.configFile = new File(configDirectory, configName + "." + extension);
         this.configDirectory = configDirectory;
-        this.dataWatcherDirectory = new File(configDirectory + "/.datawatcher/");
-        this.dataWatcherFile = new File(dataWatcherDirectory, configName + ".dat");
         this.app_name = app_name;
 
         setCategoryComment("Default", "This is the default category.");
@@ -93,28 +88,12 @@ public class HxCConfig {
         try {
             configDirectory.mkdirs();
             if (!configFile.exists()) configFile.createNewFile();
-            dataWatcherDirectory.mkdirs();
-            if (!dataWatcherFile.exists()) dataWatcherFile.createNewFile();
 
-            Path path = dataWatcherDirectory.toPath();
-            Files.setAttribute(path, "dos:hidden", true);
-
-            deSerialize();
+            //deSerialize();
             read();
-            configDataWatcherTest.clear();
+            //configDataWatcherTest.clear();
             write();
-            serialize();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void deSerialize() {
-        try {
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(dataWatcherFile));
-            configDataWatcherTest = (HashMap<String, HashMap<String, HashMap<String, Object>>>) inputStream.readObject();
-            inputStream.close();
+            //serialize();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -131,7 +110,7 @@ public class HxCConfig {
             char[] characters = line.toCharArray();
             StringBuilder nameBuilder = new StringBuilder();
 
-            if (line.endsWith("{")) {
+            /*if (line.endsWith("{")) {
                 StringBuilder categoryBuilder = new StringBuilder();
                 for (int i = 0; i < characters.length; i++) {
                     if (i == 0) continue;
@@ -140,7 +119,7 @@ public class HxCConfig {
                 }
 
                 if (categoryBuilder.length() != 0) category = categoryBuilder.toString();
-            }
+            }*/
 
             for (char character : characters) {
                 if (firstIteration && character == '\t') {
@@ -156,25 +135,15 @@ public class HxCConfig {
             String variableName = nameBuilder.toString();
 
             try {
-                Class<?> type = (Class<?>) configDataWatcherTest.get(category).get(variableName).get("Type");
+                Class<?> type = HxCConfig.getField(configClass, variableName).getType();
 
-                typeHandlers.get(type).read(variableName, configDataWatcherTest.get(category).get(variableName), line, reader, configClass);
+                typeHandlers.get(type).read(variableName, line, reader, configClass);
             } catch (IllegalArgumentException | ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }
 
         reader.close();
-    }
-
-    private void serialize() {
-        try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(dataWatcherFile));
-            outputStream.writeObject(configDataWatcherTest);
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void write() throws IOException {
@@ -224,14 +193,8 @@ public class HxCConfig {
             setPublicStatic(field);
             if (!Modifier.isPublic(field.getModifiers())) return;
 
-            HashMap<String, Object> data = new HashMap<>();
             String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
-            HashMap<String, HashMap<String, Object>> category = configDataWatcherTest.getOrDefault(categoryName, new HashMap<>());
-
-            typeHandlers.get(field.getType()).write(field, configWritingData, data);
-
-            category.put(field.getName(), data);
-            configDataWatcherTest.put(categoryName, category);
+            typeHandlers.get(field.getType()).write(field, configWritingData);
 
             HashMap<String, String> comment = valueComments.getOrDefault(categoryName, new HashMap<>());
             if(field.isAnnotationPresent(Config.comment.class)) comment.put(field.getName(), field.getAnnotation(Config.comment.class).value());

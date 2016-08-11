@@ -1,32 +1,15 @@
 package HxCKDMS.HxCConfig;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 @Config
 public class RandomConfig {
-    public static List<Purple> asdf = new LinkedList<>();
+    public static List<Purple> asdf = new ArrayList<Purple>(){{
+        add(new Purple(1, 2, 3));
+        add(new Purple(4, 5, 6));
+        add(new Purple(7, 8, 9));
+    }};
 
-    static {
-        Purple p1 = new Purple();
-        Purple p2 = new Purple();
-        Purple p3 = new Purple();
-
-        p1.x = 1;
-        p1.y = 2;
-        p1.z = 3;
-
-        p2.x = 4;
-        p2.y = 5;
-        p2.z = 6;
-
-        p3.x = 7;
-        p3.y = 8;
-        p3.z = 9;
-
-
-        asdf.add(p1);
-        asdf.add(p2);
-        asdf.add(p3);
-    }
+    public static Purple purple = new Purple(15, 16, 17);
 }
