@@ -1,26 +1,32 @@
 package HxCKDMS.HxCConfig;
 
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 @Config
 public class RandomConfig {
-    public static LinkedHashMap<LinkedHashMap<String, Integer>, String> test = new LinkedHashMap<LinkedHashMap<String, Integer>, String>(){{
-        put(new LinkedHashMap<String, Integer>(){{
-            put("asdf1", 1);
-            put("asdf2", 2);
-            put("asdf3", 3);
-        }}, "test1");
+    public static List<Purple> asdf = new LinkedList<>();
 
-        put(new LinkedHashMap<String, Integer>(){{
-            put("asdf4", 4);
-            put("asdf5", 5);
-            put("asdf6", 6);
-        }}, "test2");
+    static {
+        Purple p1 = new Purple();
+        Purple p2 = new Purple();
+        Purple p3 = new Purple();
 
-        put(new LinkedHashMap<String, Integer>(){{
-            put("asdf7", 7);
-            put("asdf8", 8);
-            put("asdf9", 9);
-        }}, "test3");
-    }};
+        p1.x = 1;
+        p1.y = 2;
+        p1.z = 3;
+
+        p2.x = 4;
+        p2.y = 5;
+        p2.z = 6;
+
+        p3.x = 7;
+        p3.y = 8;
+        p3.z = 9;
+
+
+        asdf.add(p1);
+        asdf.add(p2);
+        asdf.add(p3);
+    }
 }

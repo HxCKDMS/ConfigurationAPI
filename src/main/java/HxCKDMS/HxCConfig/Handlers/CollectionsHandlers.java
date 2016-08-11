@@ -15,7 +15,7 @@ import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
 import static HxCKDMS.HxCConfig.Flags.RETAIN_ORIGINAL_VALUES;
 
 @SuppressWarnings("unchecked")
-public class AdvancedHandlers {
+public class CollectionsHandlers {
 
     //LIST STUFF
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -78,7 +78,7 @@ public class AdvancedHandlers {
     }
 
     private static <T> void mainListReader(String variable, HashMap<String, Object> dataWatcher, BufferedReader reader, Class<?> configClass, List<T> tempList) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-        Field field = configClass.getField(variable);
+        Field field = HxCConfig.getField(configClass, variable);
         Class<T> listType = (Class<T>) dataWatcher.get("ListType");
         ICollectionsHandler cHandler = HxCConfig.getCollectionsHandler(listType);
         HashMap<String, Object> subDataWatcher = (HashMap<String, Object>) dataWatcher.getOrDefault("SubDataWatcher", null);
@@ -261,7 +261,7 @@ public class AdvancedHandlers {
         mapTextBuilder.append('[');
         boolean firstIteration = true;
         for (Map.Entry<Object, Object> entry: tempMap.entrySet()) {
-            mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, entry.getKey(), firstIteration ? subKeyDataWatcher : null, isKeyParameterized ? (ParameterizedType) types[0] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, entry.getValue(), firstIteration ? subValueDataWatcher : null,  isValueParameterized ? (ParameterizedType) types[1] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
+            mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, entry.getKey(), firstIteration ? subKeyDataWatcher : null, isKeyParameterized ? (ParameterizedType) types[0] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, entry.getValue(), firstIteration ? subValueDataWatcher : null, isValueParameterized ? (ParameterizedType) types[1] : null).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
             firstIteration = false;
         }
         mapTextBuilder.append('\n').append('\t').append(']');
@@ -320,7 +320,7 @@ public class AdvancedHandlers {
     }
 
     private static <K,V> void mainMapReader(String variable, HashMap<String, Object> dataWatcher, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
-        Field field = configClass.getField(variable);
+        Field field = configClass.getDeclaredField(variable);
         Class<K> mapKeyType = (Class<K>) dataWatcher.get("MapKeyType");
         Class<V> mapValueType = (Class<V>) dataWatcher.get("MapValueType");
         HashMap<String, Object> subKeyDataWatcher = (HashMap<String, Object>) dataWatcher.getOrDefault("SubKeyDataWatcher", null);

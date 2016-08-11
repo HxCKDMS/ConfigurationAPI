@@ -1,15 +1,19 @@
 package HxCKDMS.HxCConfig.Handlers;
 
 import HxCKDMS.HxCConfig.Config;
+import HxCKDMS.HxCConfig.HxCConfig;
 
 import java.io.BufferedReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
 
-public class BasicHandlers {
+public class PrimaryHandlers {
     private static void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config) throws IllegalAccessException {
         String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
 
@@ -22,14 +26,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", String.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                 if ("".equals(field.get(null)) || field.get(null) == null) {
@@ -58,14 +62,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Integer.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(null) == null || (Integer) field.get(null) == 0) {
@@ -95,14 +99,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Double.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
@@ -133,14 +137,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Character.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
@@ -171,14 +175,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Boolean.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
@@ -209,14 +213,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Float.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
@@ -247,14 +251,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Short.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
@@ -285,14 +289,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Long.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
@@ -323,14 +327,14 @@ public class BasicHandlers {
 
         @Override
         public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HashMap<String, Object> dataWatcher) throws IllegalAccessException {
-            BasicHandlers.write(field, config);
+            PrimaryHandlers.write(field, config);
             dataWatcher.put("Type", Byte.class);
         }
 
         @Override
         public void read(String variable, HashMap<String, Object> dataWatcher, String currentLine, BufferedReader reader, Class<?> configClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
             String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = configClass.getField(variable);
+            Field field = HxCConfig.getField(configClass, variable);
 
             try {
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {

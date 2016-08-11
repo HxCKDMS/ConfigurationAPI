@@ -1,15 +1,13 @@
 package HxCKDMS.HxCConfig;
 
 import HxCKDMS.HxCConfig.Exceptions.InvalidConfigClassException;
-import HxCKDMS.HxCConfig.Handlers.AdvancedHandlers;
-import HxCKDMS.HxCConfig.Handlers.BasicHandlers;
-import HxCKDMS.HxCConfig.Handlers.ICollectionsHandler;
-import HxCKDMS.HxCConfig.Handlers.ITypeHandler;
+import HxCKDMS.HxCConfig.Handlers.*;
 import HxCKDMS.HxCUtils.LogHelper;
 import HxCKDMS.HxCUtils.StringHelper;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -34,25 +32,28 @@ public class HxCConfig {
 
     static {
         //Basic types
-        registerHandler(new BasicHandlers.StringHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.IntegerHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.DoubleHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.CharacterHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.FloatHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.LongHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.ShortHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.ByteHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new BasicHandlers.BooleanHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.StringHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.IntegerHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.DoubleHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.CharacterHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.FloatHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.LongHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.ShortHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.ByteHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.BooleanHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Lists
-        registerHandler(new AdvancedHandlers.ListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new AdvancedHandlers.ArrayListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new AdvancedHandlers.LinkedListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.ListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.ArrayListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.LinkedListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
 
         //Maps
-        registerHandler(new AdvancedHandlers.MapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new AdvancedHandlers.HashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new AdvancedHandlers.LinkedHashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.MapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.HashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.LinkedHashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+
+        //Special
+        registerHandler(new SpecialHandlers.specialClassHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
     }
 
     @Deprecated
@@ -219,6 +220,10 @@ public class HxCConfig {
 
     private void handleFieldWriting(Field field) {
         if (typeHandlers.containsKey(field.getType())) try {
+
+            setPublicStatic(field);
+            if (!Modifier.isPublic(field.getModifiers())) return;
+
             HashMap<String, Object> data = new HashMap<>();
             String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
             HashMap<String, HashMap<String, Object>> category = configDataWatcherTest.getOrDefault(categoryName, new HashMap<>());
@@ -245,5 +250,22 @@ public class HxCConfig {
 
     private String getComment(String category, String variable) {
         return valueComments.get(category).get(variable);
+    }
+
+    public static Field getField(Class<?> clazz, String variable) throws NoSuchFieldException {
+        Field field = clazz.getDeclaredField(variable);
+        setPublicStatic(field);
+        return field;
+    }
+
+    private static void setPublicStatic(Field field) {
+        if (field.isAnnotationPresent(Config.force.class)) try {
+            Field modField = Field.class.getDeclaredField("modifiers");
+            modField.setAccessible(true);
+            modField.setInt(field, field.getModifiers() & ~Modifier.PRIVATE);
+            modField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            modField.setInt(field, field.getModifiers() | Modifier.PUBLIC);
+            modField.setInt(field, field.getModifiers() | Modifier.STATIC);
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {}
     }
 }
