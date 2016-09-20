@@ -4,7 +4,7 @@ package HxCKDMS.HxCUtils;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class LogHelper {
     private static LogManager logManager = LogManager.getLogManager();
 

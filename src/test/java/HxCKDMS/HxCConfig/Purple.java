@@ -11,6 +11,8 @@ public class Purple {
 
     public List<Integer> asfd = Arrays.asList(1, 2, 3, 4, 5);
 
+    public Blue blue = new Blue(321512, 5432, 12345, 1234.54125432D);
+
     public Purple() {}
 
     public Purple(int x, int y, int z) {
@@ -25,6 +27,7 @@ public class Purple {
                 ", y=" + y +
                 ", z=" + z +
                 ", asfd=" + asfd +
+                ", blue=" + blue +
                 '}';
     }
 }

@@ -10,6 +10,7 @@ public class main {
     public static void main(String[] args) {
 
         SpecialHandlers.registerSpecialClass(Purple.class);
+        SpecialHandlers.registerSpecialClass(Blue.class);
 
         long time = System.nanoTime();
 
