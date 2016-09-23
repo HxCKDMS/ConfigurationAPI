@@ -133,6 +133,8 @@ public class SpecialHandlers {
                     field.set(instance, cHandler.readFromCollection(null, line.split("=")[1].trim(), reader, innerInfo));
 
                     fName = "";
+
+                    reader.mark(1000000);
                 }
             } catch (Exception ignored) {
                 ignored.printStackTrace();

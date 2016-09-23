@@ -3,9 +3,12 @@ package HxCKDMS.HxCConfig;
 import HxCKDMS.HxCConfig.Handlers.SpecialHandlers;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 public class main {
     private static HxCConfig config;
+
+    private static blargh test = blargh.asdf2;
 
     public static void main(String[] args) {
 
@@ -14,12 +17,21 @@ public class main {
 
         long time = System.nanoTime();
 
-        config = new HxCConfig(RandomConfig.class, "testConfig", new File("D:\\Development\\IdeaProjects\\ConfigurationAPI\\test"), "cfg", "test");
+        config = new HxCConfig(RandomConfig.class, "testConfig", new File(".\\test"), "cfg", "test");
         config.initConfiguration();
 
         time = System.nanoTime() - time;
         System.out.println(time * 1E-9);
 
         System.out.println(RandomConfig.asdf);
+
+        try {
+            Field field = main.class.getDeclaredField("test");
+
+            System.out.println(field.getType().isEnum());
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 }
+
