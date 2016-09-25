@@ -6,6 +6,7 @@ import HxCKDMS.HxCConfig.HxCConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -31,6 +32,10 @@ public class SpecialHandlers {
 
             classTextBuilder.append('[');
             for (Field aField : fields) {
+
+                HxCConfig.setPublicStatic(aField);
+                if (!Modifier.isPublic(aField.getModifiers())) continue;
+
                 Object value = aField.get(field.get(null));
                 String fName = aField.getName();
 
@@ -82,6 +87,9 @@ public class SpecialHandlers {
             lines.add("[");
 
             for (Field aField : fields) try {
+                HxCConfig.setPublicStatic(aField);
+                if (!Modifier.isPublic(aField.getModifiers())) continue;
+
                 Object fValue = aField.get(value);
                 String fName = aField.getName();
 

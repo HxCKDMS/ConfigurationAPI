@@ -6,7 +6,8 @@ import java.util.List;
 @SuppressWarnings("WeakerAccess")
 public class Purple {
     public int x;
-    public int y;
+    @Config.force
+    private int y;
     public int z;
 
     public List<Integer> asfd = Arrays.asList(1, 2, 3, 4, 5);
