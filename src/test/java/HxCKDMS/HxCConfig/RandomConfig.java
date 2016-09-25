@@ -10,5 +10,5 @@ public class RandomConfig {
         put(-0.5342f, new Purple(7, 8, 9));
     }};
 
-    public static Purple purple = new Purple(15, 16, 17);
+    private static Purple purple = new Purple(15, 16, 17);
 }
