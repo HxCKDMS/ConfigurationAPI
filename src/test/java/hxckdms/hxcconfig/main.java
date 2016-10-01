@@ -22,7 +22,6 @@ public class main {
 
         time = System.nanoTime() - time;
         System.out.println(time * 1E-9);
-        System.out.println("asdf");
 
         try {
             Field field = main.class.getDeclaredField("test");
