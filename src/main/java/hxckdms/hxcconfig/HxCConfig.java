@@ -1,9 +1,9 @@
-package HxCKDMS.HxCConfig;
+package hxckdms.hxcconfig;
 
-import HxCKDMS.HxCConfig.Exceptions.InvalidConfigClassException;
-import HxCKDMS.HxCConfig.Handlers.*;
-import HxCKDMS.HxCUtils.LogHelper;
-import HxCKDMS.HxCUtils.StringHelper;
+import hxckdms.hxcconfig.exceptions.InvalidConfigClassException;
+import hxckdms.hxcconfig.handlers.*;
+import hxckdms.hxcutils.LogHelper;
+import hxckdms.hxcutils.StringHelper;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static HxCKDMS.HxCConfig.Flags.COLLECTION_HANDLER;
-import static HxCKDMS.HxCConfig.Flags.TYPE_HANDLER;
+import static hxckdms.hxcconfig.Flags.COLLECTION_HANDLER;
+import static hxckdms.hxcconfig.Flags.TYPE_HANDLER;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {

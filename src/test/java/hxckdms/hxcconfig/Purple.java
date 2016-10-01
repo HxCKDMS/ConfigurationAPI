@@ -1,4 +1,4 @@
-package HxCKDMS.HxCConfig;
+package hxckdms.hxcconfig;
 
 import java.util.Arrays;
 import java.util.List;

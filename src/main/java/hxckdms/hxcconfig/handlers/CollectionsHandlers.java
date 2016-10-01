@@ -1,7 +1,7 @@
-package HxCKDMS.HxCConfig.Handlers;
+package hxckdms.hxcconfig.handlers;
 
-import HxCKDMS.HxCConfig.Config;
-import HxCKDMS.HxCConfig.HxCConfig;
+import hxckdms.hxcconfig.Config;
+import hxckdms.hxcconfig.HxCConfig;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,8 +11,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
-import static HxCKDMS.HxCConfig.Flags.RETAIN_ORIGINAL_VALUES;
+import static hxckdms.hxcconfig.Flags.OVERWRITE;
+import static hxckdms.hxcconfig.Flags.RETAIN_ORIGINAL_VALUES;
 
 @SuppressWarnings("unchecked")
 public class CollectionsHandlers {

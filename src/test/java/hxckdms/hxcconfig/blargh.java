@@ -1,4 +1,4 @@
-package HxCKDMS.HxCConfig;
+package hxckdms.hxcconfig;
 
 enum blargh {
     asdf, asdf2, asdf3;

@@ -1,6 +1,6 @@
-package HxCKDMS.HxCConfig;
+package hxckdms.hxcconfig;
 
-import HxCKDMS.HxCConfig.Handlers.SpecialHandlers;
+import hxckdms.hxcconfig.handlers.SpecialHandlers;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -22,8 +22,6 @@ public class main {
 
         time = System.nanoTime() - time;
         System.out.println(time * 1E-9);
-
-        System.out.println(RandomConfig.asdf);
 
         try {
             Field field = main.class.getDeclaredField("test");

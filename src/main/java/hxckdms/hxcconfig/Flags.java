@@ -1,4 +1,4 @@
-package HxCKDMS.HxCConfig;
+package hxckdms.hxcconfig;
 
 public final class Flags {
     public static final int RETAIN_ORIGINAL_VALUES = 0b1;

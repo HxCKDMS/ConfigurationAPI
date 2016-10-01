@@ -1,4 +1,4 @@
-package HxCKDMS.HxCUtils;
+package hxckdms.hxcutils;
 
 
 import java.util.logging.Level;

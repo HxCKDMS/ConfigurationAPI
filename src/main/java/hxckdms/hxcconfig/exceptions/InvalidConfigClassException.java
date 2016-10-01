@@ -1,4 +1,4 @@
-package HxCKDMS.HxCConfig.Exceptions;
+package hxckdms.hxcconfig.exceptions;
 
 import java.io.InvalidClassException;
 
