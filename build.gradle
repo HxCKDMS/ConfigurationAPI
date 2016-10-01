@@ -8,6 +8,14 @@ repositories {
     mavenCentral()
 }
 
+def build_number="asdf"
+
+if (hasProperty("BUILD_NUMBER")) {
+	build_number = project.getProperty("BUILD_NUMBER")
+	jar.archiveName="ConfigurationAPI-${version}-${build_number}.jar"
+}
+
+
 sourceSets {
     main {
         java {
