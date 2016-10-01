@@ -1,4 +1,4 @@
-package HxCKDMS.HxCUtils;
+package hxckdms.hxcutils;
 
 public class StringHelper {
     public static <T> String repeat(T input, int times) {

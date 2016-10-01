@@ -1,6 +1,6 @@
-package HxCKDMS.HxCConfig.Handlers;
+package hxckdms.hxcconfig.handlers;
 
-import HxCKDMS.HxCConfig.HxCConfig;
+import hxckdms.hxcconfig.HxCConfig;
 
 import java.io.BufferedReader;
 import java.io.IOException;

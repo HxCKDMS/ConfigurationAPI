@@ -8,9 +8,11 @@ repositories {
     mavenCentral()
 }
 
-jar {
-    manifest {
-        attributes("Main-Class": "HxCKDMS.HxCConfig.main",
-                   "Application-Name": "HxCConfig")
-    }
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+            exclude 'test'
+       }
+   }
 }

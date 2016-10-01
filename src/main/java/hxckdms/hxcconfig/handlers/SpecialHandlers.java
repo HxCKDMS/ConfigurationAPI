@@ -1,7 +1,7 @@
-package HxCKDMS.HxCConfig.Handlers;
+package hxckdms.hxcconfig.handlers;
 
-import HxCKDMS.HxCConfig.Config;
-import HxCKDMS.HxCConfig.HxCConfig;
+import hxckdms.hxcconfig.Config;
+import hxckdms.hxcconfig.HxCConfig;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
+import static hxckdms.hxcconfig.Flags.OVERWRITE;
 
 public class SpecialHandlers {
     private static List<Class> classes = new ArrayList<>();

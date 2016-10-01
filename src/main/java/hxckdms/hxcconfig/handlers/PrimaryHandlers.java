@@ -1,14 +1,14 @@
-package HxCKDMS.HxCConfig.Handlers;
+package hxckdms.hxcconfig.handlers;
 
-import HxCKDMS.HxCConfig.Config;
-import HxCKDMS.HxCConfig.HxCConfig;
+import hxckdms.hxcconfig.Config;
+import hxckdms.hxcconfig.HxCConfig;
 
 import java.io.BufferedReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
-import static HxCKDMS.HxCConfig.Flags.OVERWRITE;
+import static hxckdms.hxcconfig.Flags.OVERWRITE;
 
 public class PrimaryHandlers {
     private static void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config) throws IllegalAccessException {
