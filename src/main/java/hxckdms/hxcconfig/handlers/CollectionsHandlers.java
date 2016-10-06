@@ -288,6 +288,7 @@ public class CollectionsHandlers {
     }
 
     private static <K,V> void mainMapReader(String variable, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap, HxCConfig HxCConfigClass) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
+        reader.mark(1000000);
         Field field = configClass.getDeclaredField(variable);
 
         HashMap<String, Object> keyInfo = new HashMap<>();
