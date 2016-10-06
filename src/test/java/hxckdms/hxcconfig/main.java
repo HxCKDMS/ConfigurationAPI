@@ -3,12 +3,9 @@ package hxckdms.hxcconfig;
 import hxckdms.hxcconfig.handlers.SpecialHandlers;
 
 import java.io.File;
-import java.lang.reflect.Field;
 
 public class main {
     private static HxCConfig config;
-
-    private static blargh test = blargh.asdf2;
 
     public static void main(String[] args) {
 
@@ -23,13 +20,7 @@ public class main {
         time = System.nanoTime() - time;
         System.out.println(time * 1E-9);
 
-        try {
-            Field field = main.class.getDeclaredField("test");
-
-            System.out.println(field.getType().isEnum());
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        config.initConfiguration();
     }
 }
 

@@ -105,8 +105,6 @@ public class CollectionsHandlers {
 
             tempList.add((T) cHandler.readFromCollection(null, line.trim(), reader, innerInfo, HxCConfigClass));
 
-            reader.mark(1000000);
-
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
@@ -328,6 +326,7 @@ public class CollectionsHandlers {
 
             if (line.contains("=")) {
                 tempMap.put(key, (V) cValueHandler.readFromCollection(null, line.split("=")[1].trim(), reader, valueInfo, HxCConfigClass));
+                reader.mark(1000000);
                 key = null;
             }
         } catch (Exception ignored) {
@@ -365,8 +364,6 @@ public class CollectionsHandlers {
                 tempMap.put(key, (V) cValueHandler.readFromCollection(null, line.split("=")[1].trim(), reader, valueInnerInfo, HxCConfigClass));
                 key = null;
             }
-
-            reader.mark(1000000);
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
