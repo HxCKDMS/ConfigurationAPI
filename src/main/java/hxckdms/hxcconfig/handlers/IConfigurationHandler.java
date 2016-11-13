@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface IConfigurationHandler {
-    List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance);
-    Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException;
+    List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance);
+    Object read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException;
 
     Class<?>[] getTypes();
 }

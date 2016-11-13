@@ -1,5 +1,6 @@
 package hxckdms.hxcconfig.handlers;
 
+import hxckdms.hxcconfig.Config;
 import hxckdms.hxcconfig.HxCConfig;
 
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static hxckdms.hxcconfig.Flags.RETAIN_ORIGINAL_VALUES;
 
 @SuppressWarnings("unchecked")
 public class CollectionsHandlers {
@@ -25,7 +28,7 @@ public class CollectionsHandlers {
         lines.add("[");
 
         for (Object obj : value) {
-            lines.addAll(cHandler.writeInCollection(field, obj, isParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            lines.addAll(cHandler.write(field, obj, isParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
         }
         lines.add("]");
 
@@ -46,11 +49,11 @@ public class CollectionsHandlers {
         String line;
         while ((line = mainInstance.getNextLine(true)) != null && !line.trim().startsWith("]")) try {
             if (cHandler instanceof IMultiLineHandler && ((IMultiLineHandler) cHandler).beginChar() == line.trim().charAt(0)) {
-                tempList.add((T) cHandler.readFromCollection(line.trim(), mainInstance, innerInfo));
+                tempList.add((T) cHandler.read(line.trim(), mainInstance, innerInfo));
                 continue;
             }
 
-            tempList.add((T) cHandler.readFromCollection(line.trim(), mainInstance, innerInfo));
+            tempList.add((T) cHandler.read(line.trim(), mainInstance, innerInfo));
 
         } catch (Exception ignored) {
             ignored.printStackTrace();
@@ -61,12 +64,12 @@ public class CollectionsHandlers {
     public static class ListHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public List readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+        public List read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
             return mainListCollectionReader(info, new ArrayList<>(), mainInstance);
         }
 
@@ -89,12 +92,12 @@ public class CollectionsHandlers {
     public static class LinkedListHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public LinkedList readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+        public LinkedList read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
             return (LinkedList) mainListCollectionReader(info, new LinkedList<>(), mainInstance);
         }
 
@@ -118,12 +121,12 @@ public class CollectionsHandlers {
 
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public ArrayList readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+        public ArrayList read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
             return (ArrayList) mainListCollectionReader(info, new ArrayList<>(), mainInstance);
         }
 
@@ -145,7 +148,7 @@ public class CollectionsHandlers {
 
     //MAP STUFF
 
-    private static List<String> mainMapCollectionWriter(Field field, Map<Object, Object> value, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+    private static List<String> mainMapWriter(Field field, Map<Object, Object> value, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
         Type[] types = parameterizedType.getActualTypeArguments();
         boolean isKeyParameterized = (types[0] instanceof ParameterizedType);
         boolean isValueParameterized = (types[1] instanceof ParameterizedType);
@@ -159,8 +162,8 @@ public class CollectionsHandlers {
 
         lines.add("[");
         for (Map.Entry<Object, Object> entry : value.entrySet()) {
-            LinkedList<String> itKey = new LinkedList<>(cKeyHandler.writeInCollection(field, entry.getKey(), isKeyParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
-            LinkedList<String> itValue = new LinkedList<>(cValueHandler.writeInCollection(field, entry.getValue(), isValueParameterized ? (ParameterizedType) types[1] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            LinkedList<String> itKey = new LinkedList<>(cKeyHandler.write(field, entry.getKey(), isKeyParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            LinkedList<String> itValue = new LinkedList<>(cValueHandler.write(field, entry.getValue(), isValueParameterized ? (ParameterizedType) types[1] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
             String keyLast = itKey.removeLast();
             String valueFirst = itValue.removeFirst();
 
@@ -173,7 +176,11 @@ public class CollectionsHandlers {
         return lines;
     }
 
-    private static <K, V> Map mainMapCollectionReader(Map<String, Object> info, Map<K, V> tempMap, HxCConfig mainInstance) throws IOException {
+    private static <K, V> Map mainMapReader(Map<String, Object> info, Map<K, V> tempMap, HxCConfig mainInstance) throws IOException {
+        if (info.containsKey("field") && ((Field) info.get("field")).isAnnotationPresent(Config.flags.class) && (((Field) info.get("field")).getAnnotation(Config.flags.class).value() & RETAIN_ORIGINAL_VALUES) == RETAIN_ORIGINAL_VALUES) try {
+            tempMap = (Map<K, V>) ((Field) info.get("field")).get(null);
+        } catch (IllegalAccessException ignored) {}
+
         Type[] types = ((ParameterizedType) info.get("Type")).getActualTypeArguments();
 
         boolean isKeyParameterized = types[0] instanceof ParameterizedType;
@@ -193,10 +200,10 @@ public class CollectionsHandlers {
         String line;
         K key = null;
         while ((line = mainInstance.getNextLine(true)) != null && !line.trim().startsWith("]")) try {
-            if (key == null) key = (K) cKeyHandler.readFromCollection(line.split("=")[0].trim(), mainInstance, keyInnerInfo);
+            if (key == null) key = (K) cKeyHandler.read(line.split("=")[0].trim(), mainInstance, keyInnerInfo);
 
             if (mainInstance.getPreviousLine(false).contains("=")) {
-                tempMap.put(key, (V) cValueHandler.readFromCollection(mainInstance.getPreviousLine(false).split("=")[1].trim(), mainInstance, valueInnerInfo));
+                tempMap.put(key, (V) cValueHandler.read(mainInstance.getPreviousLine(false).split("=")[1].trim(), mainInstance, valueInnerInfo));
                 key = null;
             }
         } catch (Exception ignored) {
@@ -208,13 +215,13 @@ public class CollectionsHandlers {
     public static class MapHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
-            return mainMapCollectionWriter(field, (Map) value, parameterizedType, mainInstance);
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainMapWriter(field, (Map) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
-            return mainMapCollectionReader(info, new HashMap<>(), mainInstance);
+        public Object read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainMapReader(info, new HashMap<>(), mainInstance);
         }
 
         @Override
@@ -236,13 +243,13 @@ public class CollectionsHandlers {
     public static class HashMapHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
-            return mainMapCollectionWriter(field, (Map) value, parameterizedType, mainInstance);
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainMapWriter(field, (Map) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
-            return mainMapCollectionReader(info, new HashMap<>(), mainInstance);
+        public Object read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainMapReader(info, new HashMap<>(), mainInstance);
         }
 
         @Override
@@ -264,13 +271,13 @@ public class CollectionsHandlers {
     public static class LinkedHashMapHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
-            return mainMapCollectionWriter(field, (Map) value, parameterizedType, mainInstance);
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainMapWriter(field, (Map) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
-            return mainMapCollectionReader(info, new LinkedHashMap<>(), mainInstance);
+        public Object read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainMapReader(info, new LinkedHashMap<>(), mainInstance);
         }
 
         @Override

@@ -17,6 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static hxckdms.hxcconfig.Flags.OVERWRITE;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
     private Class<?> configClass;
@@ -160,13 +162,15 @@ public class HxCConfig {
 
                 boolean isParameterized = (field.getGenericType() instanceof ParameterizedType);
                 HashMap<String, Object> info = new HashMap<>();
+                info.put("field", field);
 
                 if (isParameterized) info.put("Type", field.getGenericType());
 
-                Object test = typeHandlers.get(field.getType()).readFromCollection(getCurrentLine().trim().replace(variableName + "=", ""), this, info);
+                Object value = typeHandlers.get(field.getType()).read(getCurrentLine().trim().replace(variableName + "=", ""), this, info);
 
-                field.set(null, test);
-
+                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
+                    if (field.get(configClass) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, value);
+                } else field.set(configClass, value);
             } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
@@ -226,7 +230,7 @@ public class HxCConfig {
 
             boolean isParameterized = field.getGenericType() instanceof ParameterizedType;
             Class<?> type = (Class<?>) (isParameterized ? ((ParameterizedType) field.getGenericType()).getRawType() : field.getGenericType());
-            List<String> value = typeHandlers.get(type).writeInCollection(field, field.get(null), isParameterized ? (ParameterizedType) field.getGenericType() : null, this);
+            List<String> value = typeHandlers.get(type).write(field, field.get(null), isParameterized ? (ParameterizedType) field.getGenericType() : null, this);
 
             LinkedHashMap<String, Object> categoryValues = configWritingData.getOrDefault(categoryName, new LinkedHashMap<>());
             categoryValues.putIfAbsent(field.getName(), value.stream().reduce((a, b) -> a + "\n\t" + b).orElse(""));

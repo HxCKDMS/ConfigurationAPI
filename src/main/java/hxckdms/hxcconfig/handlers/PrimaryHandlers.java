@@ -10,12 +10,12 @@ public class PrimaryHandlers {
     public static class StringHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public String readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public String read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return value;
         }
 
@@ -28,12 +28,12 @@ public class PrimaryHandlers {
     public static class IntegerHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Integer readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Integer read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Integer.parseInt(value);
         }
 
@@ -46,12 +46,12 @@ public class PrimaryHandlers {
     public static class DoubleHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Double readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Double read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Double.parseDouble(value);
         }
 
@@ -64,12 +64,12 @@ public class PrimaryHandlers {
     public static class CharacterHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Character readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Character read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return value.charAt(0);
         }
 
@@ -82,12 +82,12 @@ public class PrimaryHandlers {
     public static class BooleanHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Boolean readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Boolean read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Boolean.valueOf(value);
         }
 
@@ -100,12 +100,12 @@ public class PrimaryHandlers {
     public static class FloatHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Float readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Float read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Float.valueOf(value);
         }
 
@@ -118,12 +118,12 @@ public class PrimaryHandlers {
     public static class ShortHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Short readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Short read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Short.valueOf(value);
         }
 
@@ -136,12 +136,12 @@ public class PrimaryHandlers {
     public static class LongHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Long readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Long read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Long.valueOf(value);
         }
 
@@ -154,12 +154,12 @@ public class PrimaryHandlers {
     public static class ByteHandler implements IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Byte readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+        public Byte read(String value, HxCConfig mainInstance, Map<String, Object> info) {
             return Byte.valueOf(mainInstance.getCurrentLine());
         }
 

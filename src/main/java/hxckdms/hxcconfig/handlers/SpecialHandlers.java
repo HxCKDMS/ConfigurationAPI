@@ -21,7 +21,7 @@ public class SpecialHandlers {
     public static class SpecialClassHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+        public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             List<Field> fields = Arrays.asList(value.getClass().getDeclaredFields());
             LinkedList<String> lines = new LinkedList<>();
 
@@ -39,7 +39,7 @@ public class SpecialHandlers {
                 Class<?> cType = isParameterized ? (Class<?>) ((ParameterizedType) type).getRawType() : (Class<?>) type;
                 IConfigurationHandler cHandler = mainInstance.getConfigurationTypeHandler(cType);
 
-                LinkedList<String> itValue = new LinkedList<>(cHandler.writeInCollection(field, fValue, isParameterized ? (ParameterizedType) type : null, mainInstance).stream().map(str -> "\t" +str).collect(Collectors.toList()));
+                LinkedList<String> itValue = new LinkedList<>(cHandler.write(field, fValue, isParameterized ? (ParameterizedType) type : null, mainInstance).stream().map(str -> "\t" +str).collect(Collectors.toList()));
                 String valueFirst = itValue.getFirst();
                 itValue.removeFirst();
 
@@ -55,7 +55,7 @@ public class SpecialHandlers {
         }
 
         @Override
-        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+        public Object read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
             Class<?> type = (Class<?>) info.get("Type");
             Object instance;
             try {
@@ -79,7 +79,7 @@ public class SpecialHandlers {
 
                     IConfigurationHandler cHandler = mainInstance.getConfigurationTypeHandler(field.getType());
 
-                    field.set(instance, cHandler.readFromCollection(line.split("=")[1].trim(), mainInstance, innerInfo));
+                    field.set(instance, cHandler.read(line.split("=")[1].trim(), mainInstance, innerInfo));
 
                     fName = "";
                 }
