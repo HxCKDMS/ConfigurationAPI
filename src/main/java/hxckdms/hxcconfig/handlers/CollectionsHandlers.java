@@ -1,9 +1,7 @@
 package hxckdms.hxcconfig.handlers;
 
-import hxckdms.hxcconfig.Config;
 import hxckdms.hxcconfig.HxCConfig;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -11,99 +9,48 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static hxckdms.hxcconfig.Flags.OVERWRITE;
-import static hxckdms.hxcconfig.Flags.RETAIN_ORIGINAL_VALUES;
-
 @SuppressWarnings("unchecked")
 public class CollectionsHandlers {
 
     //LIST STUFF
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private static void mainListWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-        Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
-
-        boolean isParameterized = (types[0] instanceof ParameterizedType);
-
-        Class<?> type = isParameterized ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
-        ICollectionsHandler cHandler = HxCConfigClass.getCollectionsHandler(type);
-
-        List<Object> tempList = (List<Object>) field.get(null);
-
-        String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
-        StringBuilder listTextBuilder = new StringBuilder();
-
-        listTextBuilder.append('[');
-        for (Object value : tempList) {
-            listTextBuilder.append('\n').append(cHandler.writeInCollection(field, value, null, isParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t\t" + str).reduce((a, b) -> a + "\n" + b).get());
-        }
-        listTextBuilder.append('\n').append('\t').append(']');
-
-        LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
-        categoryValues.putIfAbsent(field.getName(), listTextBuilder.toString());
-        config.put(categoryName, categoryValues);
-    }
-
     private static List<String> mainListCollectionWriter(Field field, List<Object> value, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
         Type[] types = parameterizedType.getActualTypeArguments();
         boolean isParameterized = (types[0] instanceof ParameterizedType);
         Class<?> type = isParameterized ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
 
-        ICollectionsHandler cHandler = HxCConfigClass.getCollectionsHandler(type);
+        IConfigurationHandler cHandler = HxCConfigClass.getConfigurationTypeHandler(type);
 
         LinkedList<String> lines = new LinkedList<>();
 
         lines.add("[");
 
         for (Object obj : value) {
-            lines.addAll(cHandler.writeInCollection(field, obj, null, isParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            lines.addAll(cHandler.writeInCollection(field, obj, isParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
         }
         lines.add("]");
 
         return lines;
     }
 
-    private static <T> void mainListReader(String variable, BufferedReader reader, Class<?> configClass, List<T> tempList, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-        HashMap<String, Object> info = new HashMap<>();
-
-        Field field = HxCConfig.getField(configClass, variable);
-        Type[] types = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
-        boolean isParameterized = (types[0] instanceof ParameterizedType);
-
-        Class<T> listType = isParameterized ? (Class<T>) ((ParameterizedType) types[0]).getRawType() : (Class<T>) types[0];
-        ICollectionsHandler cHandler = HxCConfigClass.getCollectionsHandler(listType);
-
-        info.put("Type", types[0]);
-
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & RETAIN_ORIGINAL_VALUES) == RETAIN_ORIGINAL_VALUES) tempList = (List<T>) field.get(null);
-
-        String line;
-        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try { tempList.add((T) cHandler.readFromCollection(null, line.trim(), reader, info, HxCConfigClass)); } catch (Exception ignored) {}
-
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-            if (field.get(null) == null || ((List) field.get(null)).isEmpty()) field.set(configClass, tempList);
-        } else field.set(configClass, tempList);
-    }
-
-    private static <T> List mainListCollectionReader(BufferedReader reader, Map<String, Object> info, List<T> tempList, HxCConfig HxCConfigClass) throws IOException {
-
+    private static <T> List mainListCollectionReader(Map<String, Object> info, List<T> tempList, HxCConfig mainInstance) throws IOException {
         Type[] types = ((ParameterizedType) info.get("Type")).getActualTypeArguments();
         boolean isParameterized = (types[0] instanceof ParameterizedType);
         Class<T> listType = isParameterized ? (Class<T>) ((ParameterizedType) types[0]).getRawType() : (Class<T>) types[0];
 
-        ICollectionsHandler cHandler = HxCConfigClass.getCollectionsHandler(listType);
+        IConfigurationHandler cHandler = mainInstance.getConfigurationTypeHandler(listType);
 
         Map<String, Object> innerInfo = new HashMap<>();
         innerInfo.clear();
         innerInfo.put("Type", types[0]);
 
         String line;
-        while ((line = reader.readLine()) != null && !line.trim().startsWith("]")) try {
+        while ((line = mainInstance.getNextLine(true)) != null && !line.trim().startsWith("]")) try {
             if (cHandler instanceof IMultiLineHandler && ((IMultiLineHandler) cHandler).beginChar() == line.trim().charAt(0)) {
-                tempList.add((T) cHandler.readFromCollection(null, line.trim(), reader, innerInfo, HxCConfigClass));
+                tempList.add((T) cHandler.readFromCollection(line.trim(), mainInstance, innerInfo));
                 continue;
             }
 
-            tempList.add((T) cHandler.readFromCollection(null, line.trim(), reader, innerInfo, HxCConfigClass));
+            tempList.add((T) cHandler.readFromCollection(line.trim(), mainInstance, innerInfo));
 
         } catch (Exception ignored) {
             ignored.printStackTrace();
@@ -111,26 +58,16 @@ public class CollectionsHandlers {
         return tempList;
     }
 
-    public static class ListHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
+    public static class ListHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            mainListWriter(field, config, HxCConfigClass);
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-            mainListReader(variable, reader, configClass, new LinkedList<>(), HxCConfigClass);
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
-            return mainListCollectionWriter(field, (List) value, parameterizedType, HxCConfigClass);
-        }
-
-        @Override
-        public List readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) throws IOException {
-            return mainListCollectionReader(reader, info, new ArrayList<>(), HxCConfigClass);
+        public List readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainListCollectionReader(info, new ArrayList<>(), mainInstance);
         }
 
         @Override
@@ -149,26 +86,16 @@ public class CollectionsHandlers {
         }
     }
 
-    public static class LinkedListHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
+    public static class LinkedListHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            mainListWriter(field, config, HxCConfigClass);
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-            mainListReader(variable, reader, configClass, new LinkedList<>(), HxCConfigClass);
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
-            return mainListCollectionWriter(field, (List) value, parameterizedType, HxCConfigClass);
-        }
-
-        @Override
-        public LinkedList readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) throws IOException {
-            return (LinkedList) mainListCollectionReader(reader, info, new LinkedList<>(), HxCConfigClass);
+        public LinkedList readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return (LinkedList) mainListCollectionReader(info, new LinkedList<>(), mainInstance);
         }
 
         @Override
@@ -187,27 +114,17 @@ public class CollectionsHandlers {
         }
     }
 
-    public static class ArrayListHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
+    public static class ArrayListHandler implements IMultiLineHandler, IConfigurationHandler {
+
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            mainListWriter(field, config, HxCConfigClass);
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-            mainListReader(variable, reader, configClass, new ArrayList<>(), HxCConfigClass);
-        }
-
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
-            return mainListCollectionWriter(field, (List) value, parameterizedType, HxCConfigClass);
-        }
-
-        @Override
-        public ArrayList readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) throws IOException {
-            return (ArrayList) mainListCollectionReader(reader, info, new ArrayList<>(), HxCConfigClass);
+        public ArrayList readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return (ArrayList) mainListCollectionReader(info, new ArrayList<>(), mainInstance);
         }
 
         @Override
@@ -228,35 +145,6 @@ public class CollectionsHandlers {
 
     //MAP STUFF
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private static void mainMapWriter(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-        Map<Object, Object> tempMap = (Map<Object, Object>) field.get(null);
-
-        Type[] types = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
-
-        boolean isKeyParameterized = types[0] instanceof ParameterizedType;
-        boolean isValueParameterized = types[1] instanceof ParameterizedType;
-
-        Class<?> keyType = isKeyParameterized ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
-        Class<?> valueType = isValueParameterized ? (Class<?>) ((ParameterizedType) types[1]).getRawType() : (Class<?>) types[1];
-
-        ICollectionsHandler cKeyHandler = HxCConfigClass.getCollectionsHandler(keyType);
-        ICollectionsHandler cValueHandler = HxCConfigClass.getCollectionsHandler(valueType);
-
-        String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
-        StringBuilder mapTextBuilder = new StringBuilder();
-
-        mapTextBuilder.append('[');
-        for (Map.Entry<Object, Object> entry: tempMap.entrySet()) {
-            mapTextBuilder.append('\n').append("\t\t").append(cKeyHandler.writeInCollection(field, entry.getKey(), null, isKeyParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().reduce((a, b) -> a + "\n\t\t" + b).get()).append('=').append(cValueHandler.writeInCollection(field, entry.getValue(), null, isValueParameterized ? (ParameterizedType) types[1] : null, HxCConfigClass).stream().reduce((a, b) -> a + "\n\t\t" + b).get());
-        }
-        mapTextBuilder.append('\n').append('\t').append(']');
-
-        LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
-        categoryValues.putIfAbsent(field.getName(), mapTextBuilder.toString());
-        config.put(categoryName, categoryValues);
-    }
-
     private static List<String> mainMapCollectionWriter(Field field, Map<Object, Object> value, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
         Type[] types = parameterizedType.getActualTypeArguments();
         boolean isKeyParameterized = (types[0] instanceof ParameterizedType);
@@ -264,19 +152,17 @@ public class CollectionsHandlers {
         Class<?> keyType = isKeyParameterized ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
         Class<?> valueType = isValueParameterized ? (Class<?>) ((ParameterizedType) types[1]).getRawType() : (Class<?>) types[1];
 
-        ICollectionsHandler cKeyHandler = HxCConfigClass.getCollectionsHandler(keyType);
-        ICollectionsHandler cValueHandler = HxCConfigClass.getCollectionsHandler(valueType);
+        IConfigurationHandler cKeyHandler = HxCConfigClass.getConfigurationTypeHandler(keyType);
+        IConfigurationHandler cValueHandler = HxCConfigClass.getConfigurationTypeHandler(valueType);
 
         LinkedList<String> lines = new LinkedList<>();
 
         lines.add("[");
         for (Map.Entry<Object, Object> entry : value.entrySet()) {
-            LinkedList<String> itKey = new LinkedList<>(cKeyHandler.writeInCollection(field, entry.getKey(), null, isKeyParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
-            LinkedList<String> itValue = new LinkedList<>(cValueHandler.writeInCollection(field, entry.getValue(), null, isValueParameterized ? (ParameterizedType) types[1] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
-            String keyLast = itKey.getLast();
-            String valueFirst = itValue.getFirst();
-            itKey.removeLast();
-            itValue.removeFirst();
+            LinkedList<String> itKey = new LinkedList<>(cKeyHandler.writeInCollection(field, entry.getKey(), isKeyParameterized ? (ParameterizedType) types[0] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            LinkedList<String> itValue = new LinkedList<>(cValueHandler.writeInCollection(field, entry.getValue(), isValueParameterized ? (ParameterizedType) types[1] : null, HxCConfigClass).stream().map(str -> "\t" + str).collect(Collectors.toList()));
+            String keyLast = itKey.removeLast();
+            String valueFirst = itValue.removeFirst();
 
             lines.addAll(itKey);
             lines.add(keyLast + "=" + valueFirst.trim());
@@ -287,59 +173,7 @@ public class CollectionsHandlers {
         return lines;
     }
 
-    private static <K,V> void mainMapReader(String variable, BufferedReader reader, Class<?> configClass, Map<K,V> tempMap, HxCConfig HxCConfigClass) throws NoSuchFieldException, ClassNotFoundException, IOException, IllegalAccessException {
-        reader.mark(1000000);
-        Field field = configClass.getDeclaredField(variable);
-
-        HashMap<String, Object> keyInfo = new HashMap<>();
-        HashMap<String, Object> valueInfo = new HashMap<>();
-
-        Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
-
-        boolean isKeyParameterized = types[0] instanceof ParameterizedType;
-        boolean isValueParameterized = types[1] instanceof ParameterizedType;
-
-
-        Class<K> mapKeyType = isKeyParameterized ? (Class<K>) ((ParameterizedType) types[0]).getRawType() : (Class<K>) types[0];
-        Class<V> mapValueType = isValueParameterized ? (Class<V>) ((ParameterizedType) types[1]).getRawType() : (Class<V>) types[1];
-
-
-        ICollectionsHandler cKeyHandler = HxCConfigClass.getCollectionsHandler(mapKeyType);
-        ICollectionsHandler cValueHandler = HxCConfigClass.getCollectionsHandler(mapValueType);
-
-        keyInfo.put("Type", types[0]);
-        valueInfo.put("Type", types[1]);
-
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & RETAIN_ORIGINAL_VALUES) == RETAIN_ORIGINAL_VALUES) tempMap = (Map<K, V>) field.get(null);
-
-        String line;
-        K key = null;
-        while ((line = reader.readLine()) != null && !line.trim().equals("]")) try {
-            if (key == null) {
-                key = (K) cKeyHandler.readFromCollection(null, line.split("=")[0].trim(), reader, keyInfo, HxCConfigClass);
-
-                try {
-                    reader.reset();
-                    line = reader.readLine();
-                    if (line == null) break;
-                } catch (IOException ignored) {}
-            }
-
-            if (line.contains("=")) {
-                tempMap.put(key, (V) cValueHandler.readFromCollection(null, line.split("=")[1].trim(), reader, valueInfo, HxCConfigClass));
-                reader.mark(1000000);
-                key = null;
-            }
-        } catch (Exception ignored) {
-            ignored.printStackTrace();
-        }
-
-        if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-            if (field.get(null) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, tempMap);
-        } else field.set(configClass, tempMap);
-    }
-
-    private static <K, V> Map mainMapCollectionReader(BufferedReader reader, Map<String, Object> info, Map<K, V> tempMap, HxCConfig HxCConfigClass) throws IOException {
+    private static <K, V> Map mainMapCollectionReader(Map<String, Object> info, Map<K, V> tempMap, HxCConfig mainInstance) throws IOException {
         Type[] types = ((ParameterizedType) info.get("Type")).getActualTypeArguments();
 
         boolean isKeyParameterized = types[0] instanceof ParameterizedType;
@@ -348,8 +182,8 @@ public class CollectionsHandlers {
         Class<K> mapKeyType = isKeyParameterized ? (Class<K>) ((ParameterizedType) types[0]).getRawType() : (Class<K>) types[0];
         Class<V> mapValueType = isValueParameterized ? (Class<V>) ((ParameterizedType) types[1]).getRawType() : (Class<V>) types[1];
 
-        ICollectionsHandler cKeyHandler = HxCConfigClass.getCollectionsHandler(mapKeyType);
-        ICollectionsHandler cValueHandler = HxCConfigClass.getCollectionsHandler(mapValueType);
+        IConfigurationHandler cKeyHandler = mainInstance.getConfigurationTypeHandler(mapKeyType);
+        IConfigurationHandler cValueHandler = mainInstance.getConfigurationTypeHandler(mapValueType);
 
         Map<String, Object> keyInnerInfo = new HashMap<>();
         keyInnerInfo.put("Type", types[0]);
@@ -358,40 +192,29 @@ public class CollectionsHandlers {
 
         String line;
         K key = null;
-        while ((line = reader.readLine()) != null && !line.trim().startsWith("]")) try {
-            if (key == null) key = (K) cKeyHandler.readFromCollection(null, line.split("=")[0].trim(), reader, keyInnerInfo, HxCConfigClass);
+        while ((line = mainInstance.getNextLine(true)) != null && !line.trim().startsWith("]")) try {
+            if (key == null) key = (K) cKeyHandler.readFromCollection(line.split("=")[0].trim(), mainInstance, keyInnerInfo);
 
-            if (line.contains("=")) {
-                tempMap.put(key, (V) cValueHandler.readFromCollection(null, line.split("=")[1].trim(), reader, valueInnerInfo, HxCConfigClass));
+            if (mainInstance.getPreviousLine(false).contains("=")) {
+                tempMap.put(key, (V) cValueHandler.readFromCollection(mainInstance.getPreviousLine(false).split("=")[1].trim(), mainInstance, valueInnerInfo));
                 key = null;
             }
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
-
         return tempMap;
     }
 
-    public static class MapHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
+    public static class MapHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            mainMapWriter(field, config, HxCConfigClass);
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainMapCollectionWriter(field, (Map) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-            mainMapReader(variable, reader, configClass, new HashMap<>(), HxCConfigClass);
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
-            return mainMapCollectionWriter(field, (Map) value, parameterizedType, HxCConfigClass);
-        }
-
-        @Override
-        public Object readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) throws IOException {
-            return mainMapCollectionReader(reader, info, new HashMap<>(), HxCConfigClass);
+        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainMapCollectionReader(info, new HashMap<>(), mainInstance);
         }
 
         @Override
@@ -410,26 +233,16 @@ public class CollectionsHandlers {
         }
     }
 
-    public static class HashMapHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
+    public static class HashMapHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            mainMapWriter(field, config, HxCConfigClass);
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainMapCollectionWriter(field, (Map) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-            mainMapReader(variable, reader, configClass, new HashMap<>(), HxCConfigClass);
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
-            return mainMapCollectionWriter(field, (Map) value, parameterizedType, HxCConfigClass);
-        }
-
-        @Override
-        public Object readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) throws IOException {
-            return mainMapCollectionReader(reader, info, new HashMap<>(), HxCConfigClass);
+        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainMapCollectionReader(info, new HashMap<>(), mainInstance);
         }
 
         @Override
@@ -448,26 +261,16 @@ public class CollectionsHandlers {
         }
     }
 
-    public static class LinkedHashMapHandler implements ITypeHandler, IMultiLineHandler, ICollectionsHandler {
+    public static class LinkedHashMapHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            mainMapWriter(field, config, HxCConfigClass);
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
+            return mainMapCollectionWriter(field, (Map) value, parameterizedType, mainInstance);
         }
 
         @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException, IOException {
-            mainMapReader(variable, reader, configClass, new LinkedHashMap<>(), HxCConfigClass);
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
-            return mainMapCollectionWriter(field, (Map) value, parameterizedType, HxCConfigClass);
-        }
-
-        @Override
-        public Object readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) throws IOException {
-            return mainMapCollectionReader(reader, info, new LinkedHashMap<>(), HxCConfigClass);
+        public Object readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
+            return mainMapCollectionReader(info, new LinkedHashMap<>(), mainInstance);
         }
 
         @Override

@@ -19,8 +19,6 @@ public class main {
 
         time = System.nanoTime() - time;
         System.out.println(time * 1E-9);
-
-        config.initConfiguration();
     }
 }
 

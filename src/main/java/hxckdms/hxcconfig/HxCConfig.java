@@ -1,66 +1,68 @@
 package hxckdms.hxcconfig;
 
 import hxckdms.hxcconfig.exceptions.InvalidConfigClassException;
-import hxckdms.hxcconfig.handlers.*;
+import hxckdms.hxcconfig.handlers.CollectionsHandlers;
+import hxckdms.hxcconfig.handlers.IConfigurationHandler;
+import hxckdms.hxcconfig.handlers.PrimaryHandlers;
+import hxckdms.hxcconfig.handlers.SpecialHandlers;
 import hxckdms.hxcutils.LogHelper;
 import hxckdms.hxcutils.StringHelper;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static hxckdms.hxcconfig.Flags.COLLECTION_HANDLER;
-import static hxckdms.hxcconfig.Flags.TYPE_HANDLER;
+import java.lang.reflect.ParameterizedType;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HxCConfig {
     private Class<?> configClass;
     private File configFile, configDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
-    private HashMap<Class<?>, ITypeHandler> typeHandlers = new HashMap<>();
-    private HashMap<Class<?>, ICollectionsHandler> collectionsHandlers = new HashMap<>();
+    private HashMap<Class<?>, IConfigurationHandler> typeHandlers = new HashMap<>();
     private HashMap<String, String> categoryComments = new HashMap<>();
     private HashMap<String, HashMap<String, String>> valueComments = new HashMap<>();
     private String app_name;
 
+    private LinkedList<String> lines;
+    private int currentLine = -1;
+
     private void registerDefaultHandlers() {
         //Basic types
-        registerHandler(new PrimaryHandlers.StringHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.IntegerHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.DoubleHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.CharacterHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.FloatHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.LongHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.ShortHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.ByteHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new PrimaryHandlers.BooleanHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new PrimaryHandlers.StringHandler());
+        registerHandler(new PrimaryHandlers.IntegerHandler());
+        registerHandler(new PrimaryHandlers.DoubleHandler());
+        registerHandler(new PrimaryHandlers.CharacterHandler());
+        registerHandler(new PrimaryHandlers.FloatHandler());
+        registerHandler(new PrimaryHandlers.LongHandler());
+        registerHandler(new PrimaryHandlers.ShortHandler());
+        registerHandler(new PrimaryHandlers.ByteHandler());
+        registerHandler(new PrimaryHandlers.BooleanHandler());
 
         //Lists
-        registerHandler(new CollectionsHandlers.ListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new CollectionsHandlers.ArrayListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new CollectionsHandlers.LinkedListHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.ListHandler());
+        registerHandler(new CollectionsHandlers.ArrayListHandler());
+        registerHandler(new CollectionsHandlers.LinkedListHandler());
 
         //Maps
-        registerHandler(new CollectionsHandlers.MapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new CollectionsHandlers.HashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
-        registerHandler(new CollectionsHandlers.LinkedHashMapHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new CollectionsHandlers.MapHandler());
+        registerHandler(new CollectionsHandlers.HashMapHandler());
+        registerHandler(new CollectionsHandlers.LinkedHashMapHandler());
 
         //Special
-        registerHandler(new SpecialHandlers.SpecialClassHandler(), TYPE_HANDLER | COLLECTION_HANDLER);
+        registerHandler(new SpecialHandlers.SpecialClassHandler());
     }
 
-    public void registerHandler(Object handler, int flag) {
-        if ((flag & Flags.TYPE_HANDLER) == Flags.TYPE_HANDLER) Arrays.stream(((ITypeHandler)handler).getTypes()).forEach(clazz -> typeHandlers.putIfAbsent(clazz, (ITypeHandler) handler));
-        if ((flag & Flags.COLLECTION_HANDLER) == Flags.COLLECTION_HANDLER) Arrays.stream(((ICollectionsHandler)handler).getTypes()).forEach(clazz -> collectionsHandlers.putIfAbsent(clazz, (ICollectionsHandler) handler));
+    public void registerHandler(IConfigurationHandler handler) {
+        Arrays.stream(handler.getTypes()).forEach(clazz -> typeHandlers.putIfAbsent(clazz, handler));
     }
 
-    public ICollectionsHandler getCollectionsHandler(Class<?> type) {
-        if (collectionsHandlers.containsKey(type)) return collectionsHandlers.get(type);
-        else throw new NullPointerException(String.format("No collections handler for type: %s exists.", type.getCanonicalName()));
+    public IConfigurationHandler getConfigurationTypeHandler(Class<?> type) {
+        if (typeHandlers.containsKey(type)) return typeHandlers.get(type);
+        else throw new NullPointerException(String.format("No configuration handler for type: %s exists.", type.getCanonicalName()));
     }
 
     public void setCategoryComment(String category, String comment) {
@@ -92,11 +94,37 @@ public class HxCConfig {
         }
     }
 
+    public LinkedList<String> getLines() {
+        return (LinkedList<String>) Collections.unmodifiableList(lines);
+    }
+
+    public String getPreviousLine(boolean decrement) {
+        if ((currentLine - 1) < 0) return null;
+        if (decrement) --currentLine;
+
+        return lines.get(currentLine);
+    }
+
+    public String getCurrentLine() {
+        return lines.get(currentLine);
+    }
+
+    public String getNextLine(boolean increment) {
+        if ((currentLine + 1) > (lines.size() - 1)) return null;
+        if (increment) ++currentLine;
+        return lines.get(currentLine);
+    }
+
+    public int getCurrentLineNumber() {
+        return currentLine + 1;
+    }
+
     private void read() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(configFile), "UTF-8"));
+        lines = new LinkedList<>(Files.readAllLines(Paths.get(configFile.toURI()), Charset.defaultCharset()));
+
         String line;
         //String category = "";
-        while ((line = reader.readLine()) != null) {
+        while ((line = getNextLine(true)) != null) {
             if (line.trim().startsWith("#")) continue;
             boolean firstIteration = true;
             line = line.replaceFirst("    ", "\t");
@@ -128,15 +156,23 @@ public class HxCConfig {
             String variableName = nameBuilder.toString();
 
             try {
-                Class<?> type = HxCConfig.getField(configClass, variableName).getType();
+                Field field = HxCConfig.getField(configClass, variableName);
 
-                typeHandlers.get(type).read(variableName, line, reader, configClass, this);
-            } catch (IllegalArgumentException | ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                boolean isParameterized = (field.getGenericType() instanceof ParameterizedType);
+                HashMap<String, Object> info = new HashMap<>();
+
+                if (isParameterized) info.put("Type", field.getGenericType());
+
+                Object test = typeHandlers.get(field.getType()).readFromCollection(getCurrentLine().trim().replace(variableName + "=", ""), this, info);
+
+                field.set(null, test);
+
+            } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }
 
-        reader.close();
+        lines.clear();
     }
 
     private void write() throws IOException {
@@ -187,7 +223,14 @@ public class HxCConfig {
             if (!Modifier.isPublic(field.getModifiers())) return;
 
             String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
-            typeHandlers.get(field.getType()).write(field, configWritingData, this);
+
+            boolean isParameterized = field.getGenericType() instanceof ParameterizedType;
+            Class<?> type = (Class<?>) (isParameterized ? ((ParameterizedType) field.getGenericType()).getRawType() : field.getGenericType());
+            List<String> value = typeHandlers.get(type).writeInCollection(field, field.get(null), isParameterized ? (ParameterizedType) field.getGenericType() : null, this);
+
+            LinkedHashMap<String, Object> categoryValues = configWritingData.getOrDefault(categoryName, new LinkedHashMap<>());
+            categoryValues.putIfAbsent(field.getName(), value.stream().reduce((a, b) -> a + "\n\t" + b).orElse(""));
+            configWritingData.put(categoryName, categoryValues);
 
             HashMap<String, String> comment = valueComments.getOrDefault(categoryName, new HashMap<>());
             if(field.isAnnotationPresent(Config.comment.class)) comment.put(field.getName(), field.getAnnotation(Config.comment.class).value());

@@ -2,16 +2,14 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 sourceCompatibility = 1.8
-version = '1.1'
+version = '1.2'
 
 repositories {
     mavenCentral()
 }
 
-def build_number="asdf"
-
 if (hasProperty("BUILD_NUMBER")) {
-	build_number = project.getProperty("BUILD_NUMBER")
+    def build_number = project.getProperty("BUILD_NUMBER")
 	jar.archiveName="ConfigurationAPI-${version}-${build_number}.jar"
 }
 

@@ -1,51 +1,22 @@
 package hxckdms.hxcconfig.handlers;
 
-import hxckdms.hxcconfig.Config;
 import hxckdms.hxcconfig.HxCConfig;
 
-import java.io.BufferedReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
-import static hxckdms.hxcconfig.Flags.OVERWRITE;
-
 public class PrimaryHandlers {
-    private static void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config) throws IllegalAccessException {
-        String categoryName = field.isAnnotationPresent(Config.category.class) ? field.getAnnotation(Config.category.class).value() : "General";
-
-        LinkedHashMap<String, Object> categoryValues = config.getOrDefault(categoryName, new LinkedHashMap<>());
-        categoryValues.putIfAbsent(field.getName(), field.get(null));
-        config.put(categoryName, categoryValues);
-    }
-
-    public static class StringHandler implements ITypeHandler, ICollectionsHandler {
+    public static class StringHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                if ("".equals(field.get(null)) || field.get(null) == null) {
-                    if (!value.isEmpty()) field.set(configClass, value);
-                }
-            } else if (!value.isEmpty()) field.set(configClass, value);
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public String readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return currentLine;
+        public String readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return value;
         }
 
         @Override
@@ -54,34 +25,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class IntegerHandler implements ITypeHandler, ICollectionsHandler {
+    public static class IntegerHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Integer) field.get(null) == 0) {
-                        if (!value.isEmpty()) field.set(configClass, Integer.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Integer.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Integer readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Integer.parseInt(currentLine);
+        public Integer readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Integer.parseInt(value);
         }
 
         @Override
@@ -90,35 +43,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class DoubleHandler implements ITypeHandler, ICollectionsHandler {
+    public static class DoubleHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Double) field.get(null) == 0) {
-                        if (!value.isEmpty()) field.set(configClass, Double.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Double.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Double readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Double.parseDouble(currentLine);
+        public Double readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Double.parseDouble(value);
         }
 
         @Override
@@ -127,35 +61,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class CharacterHandler implements ITypeHandler, ICollectionsHandler {
+    public static class CharacterHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Character) field.get(null) == ' ') {
-                        if (!value.isEmpty()) field.set(configClass, value.charAt(0));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, value.charAt(0));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Character readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return currentLine.charAt(0);
+        public Character readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return value.charAt(0);
         }
 
         @Override
@@ -164,35 +79,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class BooleanHandler implements ITypeHandler, ICollectionsHandler {
+    public static class BooleanHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || !((Boolean) field.get(null))) {
-                        if (!value.isEmpty()) field.set(configClass, Boolean.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Boolean.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Boolean readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Boolean.valueOf(currentLine);
+        public Boolean readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Boolean.valueOf(value);
         }
 
         @Override
@@ -201,35 +97,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class FloatHandler implements ITypeHandler, ICollectionsHandler {
+    public static class FloatHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Float) field.get(null) == 0) {
-                        if (!value.isEmpty()) field.set(configClass, Float.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Float.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Float readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Float.valueOf(currentLine);
+        public Float readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Float.valueOf(value);
         }
 
         @Override
@@ -238,35 +115,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class ShortHandler implements ITypeHandler, ICollectionsHandler {
+    public static class ShortHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Short) field.get(null) == 0) {
-                        if (!value.isEmpty()) field.set(configClass, Short.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Short.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Short readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Short.valueOf(currentLine);
+        public Short readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Short.valueOf(value);
         }
 
         @Override
@@ -275,35 +133,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class LongHandler implements ITypeHandler, ICollectionsHandler {
+    public static class LongHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Long) field.get(null) == 0) {
-                        if (!value.isEmpty()) field.set(configClass, Long.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Long.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Long readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Long.valueOf(currentLine);
+        public Long readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Long.valueOf(value);
         }
 
         @Override
@@ -312,35 +151,16 @@ public class PrimaryHandlers {
         }
     }
 
-    public static class ByteHandler implements ITypeHandler, ICollectionsHandler {
+    public static class ByteHandler implements IConfigurationHandler {
 
         @Override
-        public void write(Field field, LinkedHashMap<String, LinkedHashMap<String, Object>> config, HxCConfig HxCConfigClass) throws IllegalAccessException {
-            PrimaryHandlers.write(field, config);
-        }
-
-        @Override
-        public void read(String variable, String currentLine, BufferedReader reader, Class<?> configClass, HxCConfig HxCConfigClass) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
-            String value = currentLine.trim().replace(variable, "").replace("=", "");
-            Field field = HxCConfig.getField(configClass, variable);
-
-            try {
-                if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
-                    if (field.get(null) == null || (Byte) field.get(null) == 0) {
-                        if (!value.isEmpty()) field.set(configClass, Byte.valueOf(value));
-                    }
-                }else if (!value.isEmpty()) field.set(configClass, Byte.valueOf(value));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        @Override
-        public List<String> writeInCollection(Field field, Object value, HashMap<String, Object> subDataWatcher, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+        public List<String> writeInCollection(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
             return Collections.singletonList(String.valueOf(value));
         }
 
         @Override
-        public Byte readFromCollection(HashMap<String, Object> subDataWatcher, String currentLine, BufferedReader reader, Map<String, Object> info, HxCConfig HxCConfigClass) {
-            return Byte.valueOf(currentLine);
+        public Byte readFromCollection(String value, HxCConfig mainInstance, Map<String, Object> info) {
+            return Byte.valueOf(mainInstance.getCurrentLine());
         }
 
         @Override
