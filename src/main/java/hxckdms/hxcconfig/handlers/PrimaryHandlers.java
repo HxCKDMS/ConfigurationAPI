@@ -160,7 +160,7 @@ public class PrimaryHandlers {
 
         @Override
         public Byte read(String value, HxCConfig mainInstance, Map<String, Object> info) {
-            return Byte.valueOf(mainInstance.getCurrentLine());
+            return Byte.valueOf(value);
         }
 
         @Override
