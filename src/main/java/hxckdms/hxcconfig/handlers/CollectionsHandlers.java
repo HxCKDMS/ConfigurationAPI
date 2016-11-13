@@ -16,7 +16,7 @@ import static hxckdms.hxcconfig.Flags.RETAIN_ORIGINAL_VALUES;
 public class CollectionsHandlers {
 
     //LIST STUFF
-    private static List<String> mainListCollectionWriter(Field field, List<Object> value, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
+    private static List<String> mainListWriter(Field field, List<Object> value, ParameterizedType parameterizedType, HxCConfig HxCConfigClass) {
         Type[] types = parameterizedType.getActualTypeArguments();
         boolean isParameterized = (types[0] instanceof ParameterizedType);
         Class<?> type = isParameterized ? (Class<?>) ((ParameterizedType) types[0]).getRawType() : (Class<?>) types[0];
@@ -35,7 +35,7 @@ public class CollectionsHandlers {
         return lines;
     }
 
-    private static <T> List mainListCollectionReader(Map<String, Object> info, List<T> tempList, HxCConfig mainInstance) throws IOException {
+    private static <T> List mainListReader(Map<String, Object> info, List<T> tempList, HxCConfig mainInstance) throws IOException {
         Type[] types = ((ParameterizedType) info.get("Type")).getActualTypeArguments();
         boolean isParameterized = (types[0] instanceof ParameterizedType);
         Class<T> listType = isParameterized ? (Class<T>) ((ParameterizedType) types[0]).getRawType() : (Class<T>) types[0];
@@ -65,12 +65,12 @@ public class CollectionsHandlers {
 
         @Override
         public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
-            return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
+            return mainListWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
         public List read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
-            return mainListCollectionReader(info, new ArrayList<>(), mainInstance);
+            return mainListReader(info, new ArrayList<>(), mainInstance);
         }
 
         @Override
@@ -93,12 +93,12 @@ public class CollectionsHandlers {
 
         @Override
         public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
-            return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
+            return mainListWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
         public LinkedList read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
-            return (LinkedList) mainListCollectionReader(info, new LinkedList<>(), mainInstance);
+            return (LinkedList) mainListReader(info, new LinkedList<>(), mainInstance);
         }
 
         @Override
@@ -122,12 +122,12 @@ public class CollectionsHandlers {
 
         @Override
         public List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance) {
-            return mainListCollectionWriter(field, (List) value, parameterizedType, mainInstance);
+            return mainListWriter(field, (List) value, parameterizedType, mainInstance);
         }
 
         @Override
         public ArrayList read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException {
-            return (ArrayList) mainListCollectionReader(info, new ArrayList<>(), mainInstance);
+            return (ArrayList) mainListReader(info, new ArrayList<>(), mainInstance);
         }
 
         @Override
