@@ -24,7 +24,7 @@ public class HxCConfig {
     private Class<?> configClass;
     private File configFile, configDirectory;
     private LinkedHashMap<String, LinkedHashMap<String, Object>> configWritingData = new LinkedHashMap<>();
-    private HashMap<Class<?>, IConfigurationHandler> typeHandlers = new HashMap<>();
+    private LinkedHashSet<IConfigurationHandler> typeHandlers = new LinkedHashSet<>();
     private HashMap<String, String> categoryComments = new HashMap<>();
     private HashMap<String, HashMap<String, String>> valueComments = new HashMap<>();
     private String app_name;
@@ -59,12 +59,11 @@ public class HxCConfig {
     }
 
     public void registerHandler(IConfigurationHandler handler) {
-        Arrays.stream(handler.getTypes()).forEach(clazz -> typeHandlers.putIfAbsent(clazz, handler));
+        typeHandlers.add(handler);
     }
 
     public IConfigurationHandler getConfigurationTypeHandler(Class<?> type) {
-        if (typeHandlers.containsKey(type)) return typeHandlers.get(type);
-        else throw new NullPointerException(String.format("No configuration handler for type: %s exists.", type.getCanonicalName()));
+        return typeHandlers.parallelStream().filter(typeHandler -> typeHandler.isTypeAccepted(type)).findFirst().orElseThrow(() -> new NullPointerException(String.format("No configuration handler for type: %s exists.", type.getCanonicalName())));
     }
 
     public void setCategoryComment(String category, String comment) {
@@ -166,7 +165,7 @@ public class HxCConfig {
 
                 if (isParameterized) info.put("Type", field.getGenericType());
 
-                Object value = typeHandlers.get(field.getType()).read(getCurrentLine().trim().replace(variableName + "=", ""), this, info);
+                Object value = getConfigurationTypeHandler(field.getType()).read(getCurrentLine().trim().replace(variableName + "=", ""), this, info);
 
                 if (field.isAnnotationPresent(Config.flags.class) && (field.getAnnotation(Config.flags.class).value() & OVERWRITE) == OVERWRITE) {
                     if (field.get(configClass) == null || ((Map) field.get(null)).isEmpty()) field.set(configClass, value);
@@ -221,7 +220,7 @@ public class HxCConfig {
     }
 
     private void handleFieldWriting(Field field) {
-        if (typeHandlers.containsKey(field.getType())) try {
+        if (typeHandlers.parallelStream().anyMatch(typeHandler -> typeHandler.isTypeAccepted(field.getType()))) try {
 
             setPublicStatic(field);
             if (!Modifier.isPublic(field.getModifiers())) return;
@@ -230,7 +229,7 @@ public class HxCConfig {
 
             boolean isParameterized = field.getGenericType() instanceof ParameterizedType;
             Class<?> type = (Class<?>) (isParameterized ? ((ParameterizedType) field.getGenericType()).getRawType() : field.getGenericType());
-            List<String> value = typeHandlers.get(type).write(field, field.get(null), isParameterized ? (ParameterizedType) field.getGenericType() : null, this);
+            List<String> value = getConfigurationTypeHandler(type).write(field, field.get(null), isParameterized ? (ParameterizedType) field.getGenericType() : null, this);
 
             LinkedHashMap<String, Object> categoryValues = configWritingData.getOrDefault(categoryName, new LinkedHashMap<>());
             categoryValues.putIfAbsent(field.getName(), value.stream().reduce((a, b) -> a + "\n\t" + b).orElse(""));

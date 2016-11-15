@@ -20,8 +20,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {String.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == String.class;
         }
     }
 
@@ -38,8 +38,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Integer.class, Integer.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Integer.class || type == Integer.TYPE;
         }
     }
 
@@ -56,8 +56,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Double.class, Double.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Double.class || type == Double.TYPE;
         }
     }
 
@@ -74,8 +74,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Character.class, Character.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Character.class || type == Character.TYPE;
         }
     }
 
@@ -92,8 +92,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Boolean.class, Boolean.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Boolean.class || type == Boolean.TYPE;
         }
     }
 
@@ -110,8 +110,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Float.class, Float.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Float.class || type == Float.TYPE;
         }
     }
 
@@ -128,8 +128,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Short.class, Short.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Short.class || type == Short.TYPE;
         }
     }
 
@@ -146,8 +146,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Long.class, Long.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Long.class || type == Long.TYPE;
         }
     }
 
@@ -164,8 +164,8 @@ public class PrimaryHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {Byte.class, Byte.TYPE};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Byte.class || type == Byte.TYPE;
         }
     }
 }

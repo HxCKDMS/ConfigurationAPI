@@ -74,8 +74,8 @@ public class CollectionsHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[] {List.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == List.class;
         }
 
         @Override
@@ -102,8 +102,8 @@ public class CollectionsHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[]{LinkedList.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == LinkedList.class;
         }
 
         @Override
@@ -131,8 +131,8 @@ public class CollectionsHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[]{ArrayList.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == ArrayList.class;
         }
 
         @Override
@@ -225,8 +225,8 @@ public class CollectionsHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[]{Map.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == Map.class;
         }
 
         @Override
@@ -253,8 +253,8 @@ public class CollectionsHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[]{HashMap.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == HashMap.class;
         }
 
         @Override
@@ -281,8 +281,8 @@ public class CollectionsHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            return new Class<?>[]{LinkedHashMap.class};
+        public boolean isTypeAccepted(Class<?> type) {
+            return type == LinkedHashMap.class;
         }
 
         @Override

@@ -17,7 +17,6 @@ public class SpecialHandlers {
         classes.add(clazz);
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static class SpecialClassHandler implements IMultiLineHandler, IConfigurationHandler {
 
         @Override
@@ -91,9 +90,8 @@ public class SpecialHandlers {
         }
 
         @Override
-        public Class<?>[] getTypes() {
-            Class<?>[] tmp = new Class<?>[classes.size()];
-            return classes.toArray(tmp);
+        public boolean isTypeAccepted(Class<?> type) {
+            return classes.contains(type);
         }
 
         @Override

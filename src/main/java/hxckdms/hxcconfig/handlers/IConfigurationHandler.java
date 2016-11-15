@@ -12,5 +12,5 @@ public interface IConfigurationHandler {
     List<String> write(Field field, Object value, ParameterizedType parameterizedType, HxCConfig mainInstance);
     Object read(String value, HxCConfig mainInstance, Map<String, Object> info) throws IOException;
 
-    Class<?>[] getTypes();
+    boolean isTypeAccepted(Class<?> type);
 }
