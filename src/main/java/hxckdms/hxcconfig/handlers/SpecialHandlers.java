@@ -78,7 +78,8 @@ public class SpecialHandlers {
 
                     IConfigurationHandler cHandler = mainInstance.getConfigurationTypeHandler(field.getType());
 
-                    field.set(instance, cHandler.read(line.split("=")[1].trim(), mainInstance, innerInfo));
+                    String[] entry = line.split("=");
+                    field.set(instance, cHandler.read(entry.length > 1 ? entry[1].trim() : "", mainInstance, innerInfo));
 
                     fName = "";
                 }

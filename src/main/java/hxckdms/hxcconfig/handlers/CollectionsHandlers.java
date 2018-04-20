@@ -203,7 +203,8 @@ public class CollectionsHandlers {
             if (key == null) key = (K) cKeyHandler.read(line.split("=")[0].trim(), mainInstance, keyInnerInfo);
 
             if (mainInstance.getPreviousLine(false).contains("=")) {
-                tempMap.put(key, (V) cValueHandler.read(mainInstance.getPreviousLine(false).split("=")[1].trim(), mainInstance, valueInnerInfo));
+                String[] entry = mainInstance.getPreviousLine(false).split("=");
+                tempMap.put(key, (V) cValueHandler.read(entry.length > 0 ? entry[1].trim() : "", mainInstance, valueInnerInfo));
                 key = null;
             }
         } catch (Exception ignored) {

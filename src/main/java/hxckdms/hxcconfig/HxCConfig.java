@@ -83,6 +83,7 @@ public class HxCConfig {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public final void initConfiguration() {
         configWritingData.clear();
+        currentLine = -1;
 
         try {
             configDirectory.mkdirs();
