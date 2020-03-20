@@ -165,6 +165,7 @@ public class HxCConfig {
                 info.put("field", field);
 
                 if (isParameterized) info.put("Type", field.getGenericType());
+                else info.put("Type", field.getType());
 
                 Object value = getConfigurationTypeHandler(field.getType()).read(getCurrentLine().trim().replace(variableName + "=", ""), this, info);
 

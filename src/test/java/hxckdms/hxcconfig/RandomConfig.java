@@ -18,6 +18,8 @@ public class RandomConfig {
     public static String test = "asdfkl";
     public static double PI = Math.PI;
 
+    public static Blue fuck = new Blue(543, 77, 687, 87);
+
     public static LinkedHashMap<HashMap<String, Integer>, LinkedList<Boolean>> rawr = new LinkedHashMap<HashMap<String, Integer>, LinkedList<Boolean>>() {{
         put(new HashMap<String, Integer>() {{
             put("test", 5);
