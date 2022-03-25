@@ -1,8 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 
-sourceCompatibility = 1.8
-version = '1.4'
+sourceCompatibility = 17
+version = '1.4.1'
 
 repositories {
     mavenCentral()

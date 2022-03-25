@@ -96,6 +96,21 @@ public class HxCConfig {
         }
     }
 
+    /**
+     * This writes out without reading for situations I needed that
+     *   ~ KeldonSlayer (DrZed)
+     **/
+    public final void saveConfiguration() {
+        configWritingData.clear();
+        currentLine = -1;
+
+        try {
+            write();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public LinkedList<String> getLines() {
         return (LinkedList<String>) Collections.unmodifiableList(lines);
     }
